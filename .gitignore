@@ -1,3 +1,4 @@
+fabfile.py
 *.pyc
 *.swp
 *.sqlite3
