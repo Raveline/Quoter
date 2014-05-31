@@ -1,0 +1,19 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Quoter</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'quoter/css/bootstrap.min.css' %}" media="screen"/>
+        <script type="text/javascript" src="{% static 'quoter/js/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'quoter/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'quoter/js/typeahead.bundle.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'quoter/js/quoter.js'%}"></script>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1>QUOTER</h1>
+        </div>
+    {% block content %} {% endblock %}
+    </body>
+</html>

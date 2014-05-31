@@ -1,10 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
+class Folder(models.Model):
+    name = models.CharField(max_length=128)
+    user = models.ForeignKey(User)
+
 class Author(models.Model):
     first_name = models.CharField(max_length=128, blank=True)
     last_name = models.CharField(max_length=128, blank=True)
     surname = models.CharField(max_length=128, blank=True)
+    folder = models.ForeignKey(Folder)
 
     def __str__(self):
         return self.__unicode__()
@@ -26,6 +31,7 @@ class Source(models.Model):
     title = models.CharField(max_length=128)
     authors = models.ManyToManyField(Author)
     metadatas = models.ManyToManyField(SourceInfos)
+    folder = models.ForeignKey(Folder)
 
     def __unicode__(self):
         author = self.main_author()
@@ -42,6 +48,7 @@ class Source(models.Model):
 
 class Tag(models.Model):
     name= models.CharField(max_length=64)
+    folder = models.ForeignKey(Folder)
 
     def __unicode__(self):
         return self.name
@@ -53,7 +60,13 @@ class Quote(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, null=True)
     page = models.CharField(max_length=32, blank=True)
     comment = models.TextField(default='')
+    folder = models.ForeignKey(Folder)
 
 class Template(models.Model):
     name = models.CharField(max_length=32, blank=True)
     expected_metadatas = models.ManyToManyField(SourceMetadata)
+
+class Format(models.Model):
+    name = models.CharField(max_length=128)
+    schema = models.TextField()
+    folder = models.ForeignKey(Folder)

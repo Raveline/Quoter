@@ -2,12 +2,13 @@
 navigation = undefined;
 
 // Tabs order constant
-FIND_QUOTE = 0;
-NEW_QUOTE = 1;
-NEW_SOURCE = 2;
-NEW_AUTHOR = 3;
-EXTRACT = 4;
-STATS = 5;
+FOLDER_SWITCH = 0;
+FIND_QUOTE = 1;
+NEW_QUOTE = 2;
+NEW_SOURCE = 3;
+NEW_AUTHOR = 4;
+EXTRACT = 5;
+STATS = 6;
 
 function quoter_init(tags) {
         // A navigation object will keep in memory the current-status
@@ -46,7 +47,7 @@ function quoter_init(tags) {
         // Author update on quote form
         $('#quote-add-source').on('change', function(e) {
             var id_source = $('#quote-add-source').val();
-            ajax_from("/author/" + id_source + "/of/", updateQuoteAuthors);
+            ajax_from("/author/" + id_source + "/of", updateQuoteAuthors);
         });
 
         // Tag removing
@@ -173,7 +174,7 @@ function save_a_quote() {
     var quote_value = $('textarea[name=content]').val();
     var page_value = $('input[name="quote-page"]').val();
     var tags_value = $('input[name="quote-tags"]').val();
-    var comment_value = $('input[name="comment"]').val();
+    var comment_value = $('textarea[name="comment"]').val();
 
     var data = {"source":source_value
                 , "authors":author_value
@@ -236,6 +237,7 @@ function clean_quote() {
     $('input[name=quote-tags]').val('');
     $('input[name=quote-page]').val('');
     $('textarea[name=comment]').val('');
+    $('#quote-tag-container').empty();
 }
 
 function clean_source() {
@@ -261,6 +263,7 @@ function updateAuthorsFields(response) {
 function updateSourcesFields(response) {
     updateField($('#quote-add-source'), response.data);
     updateField($('select[name="find-source"]'), response.data);
+    $('#quote-add-source').change();
 }
 
 function updateQuoteAuthors(response) {

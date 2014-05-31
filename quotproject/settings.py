@@ -36,7 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'quoterapp'
+    'quoter'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -48,9 +48,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'quoter.urls'
+ROOT_URLCONF = 'quotproject.urls'
 
-WSGI_APPLICATION = 'quoter.wsgi.application'
+WSGI_APPLICATION = 'quotproject.wsgi.application'
 
 
 # Database
@@ -59,8 +59,8 @@ WSGI_APPLICATION = 'quoter.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+        'NAME': os.path.join(BASE_DIR, 'user1.sqlite3'),
+     },
 }
 
 # Internationalization

@@ -1,22 +1,10 @@
-{% load staticfiles %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <title>Quoter</title>
-        <link rel="stylesheet" type="text/css" href="{% static 'quoter/css/bootstrap.min.css' %}" media="screen"/>
-        <script type="text/javascript" src="{% static 'quoter/js/jquery.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'quoter/js/bootstrap.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'quoter/js/typeahead.bundle.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'quoter/js/quoter.js'%}"></script>
-    </head>
-    <body>
-        <div class="page-header">
-            <h1>QUOTER</h1>
-        </div>
+{% extends "quoter/structure.html" %}
+{% block content %}
+        <div>Current folder : {{ current_folder_name }}</div>
         <div class="col-md-2" id="main-menu-container">
             <ul id="main-menu" class="nav nav-tabs nav-pills nav-stacked">
-                <li class="active"><a href="#quote-find">Find a quote</a></li>
+                <li class="active"><a href="#quote-folder">Choose folder</a></li>
+                <li><a href="#quote-find">Find a quote</a></li>
                 <li><a href="#quote-add">Add a quote</a></li>
                 <li><a href="#source-add">Add a source</a></li>
                 <li><a href="#author-add">Add an author</a></li>
@@ -27,8 +15,46 @@
         <!-- Content -->
         <div class="col-md-8">
             <div class="tab-content">
+                <!-- Picking a foler -->
+                <div id="quote-folder" class="tab-pane fade in active">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Pick a folder</h3>
+                        </div>
+                    <div class="panel-body">
+                        <form method="POST" action="/folder/add" role="form">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="folder-name">New folder name</label>
+                                <div class="input-group">
+                                    <input type="text" name="new-folder-name" class="form-control"/>
+                                    <span class="input-group-btn">
+                                        <button id="createNewFolder" class="btn btn-default" type="submit">Create</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
+                        <form method="POST" action="/folder/pick" role="form">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="folder-pick">Pick an existing folder</label>
+                                <div class="input-group">
+                                    <select class="form-control" name="existing-folder">
+                                    {% for folder in folders %}
+                                    <option value="{{ folder.pk }}">{{folder.name}}</option>
+                                    {% endfor %}
+                                    </select>
+                                    <span class="input-group-btn">
+                                        <button id="pickExistingFolder" class="btn btn-default" type="submit">Pick</button>
+                                    </span>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                    </div>
+                </div>
                 <!-- Finding a quote -->
-                <div id="quote-find" class="tab-pane fade in active">
+                <div id="quote-find" class="tab-pane fade in">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <h3 class="panel-title">Find a quote</h3>
@@ -205,5 +231,4 @@
             quoter_init(tags);
         });
     </script>
-</body>
-</html>
+{% endblock %}
