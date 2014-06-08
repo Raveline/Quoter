@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from models import Author, Source, Quote, SourceMetadata, SourceInfos, Tag, Folder
 from django.utils.safestring import mark_safe
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, get_user, login
+from django.contrib.auth import authenticate, get_user, login, logout
 from django.contrib.auth.models import User
 
 ########### NAVIGATION
@@ -45,6 +45,10 @@ def userHome(request):
     context = { 'folders' : get_folders_for(request)
             , 'current_folder_name' : get_current_folder_name(request) }
     return render(request, 'quoter/quoter.html', context)
+
+def quoterLogout(request):
+    logout(request)
+    return redirect('home')
 
 ########### Services
 @login_required

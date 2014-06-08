@@ -1,6 +1,6 @@
 {% extends "quoter/structure.html" %}
 {% block content %}
-        <div>Current folder : {{ current_folder_name }}</div>
+        <div class="well well-sm">Logged as {{ user.username }} || Current folder : {{ current_folder_name }} || <a href="/logout">Logout</a></div>
         <div class="col-md-2" id="main-menu-container">
             <ul id="main-menu" class="nav nav-tabs nav-pills nav-stacked">
                 <li class="active"><a href="#quote-folder">Choose folder</a></li>

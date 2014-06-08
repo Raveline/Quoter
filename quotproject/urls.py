@@ -8,6 +8,7 @@ urlpatterns = patterns('',
 
     url(r'^$', 'quoter.views.home', name='home'),
     url(r'^login$', 'quoter.views.quoterLogin'),
+    url(r'^logout$', 'quoter.views.quoterLogout'),
     url(r'^author/new', 'quoter.views.addAuthor'),
     url(r'^author/all', 'quoter.views.getAuthors'),
     url(r'^author/(?P<source_id>\d+)/of$', 'quoter.views.getAuthorsOf'),
