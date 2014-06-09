@@ -230,14 +230,16 @@ function ajax_to(url, data, callback) {
 }
 
 function clean_quote() {
-    $('select[name=source]').val('');
-    $('select[name=author]').empty();
+    // Note : we don't clean source and author,
+    // for it is likely one would use Quoter while
+    // reading, in which case, the user will add
+    // quote from the same source.
     $('textarea[name=content]').val('');
     $('input[name=quote-tag]').val('');
     $('input[name=quote-tags]').val('');
     $('input[name=quote-page]').val('');
     $('textarea[name=comment]').val('');
-    $('#quote-tag-container').empty();
+    $('#quote-tag-container span').remove();
 }
 
 function clean_source() {
