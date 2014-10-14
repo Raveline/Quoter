@@ -263,7 +263,11 @@ def read_metadatas(metadatas_string):
     return infos
 
 def transform_metadatas_to_dict(metadatas_string):
-    return dict(item.split("###") for item in metadatas_string.split("@@@"))
+    if len(metadatas_string) > 0:
+        return dict(item.split("###")
+                    for item in metadatas_string.split("@@@"))
+    else:
+        return {}
 
 ### Auth related
 def checkUser(login, typed_password):
