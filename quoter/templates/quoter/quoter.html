@@ -18,9 +18,8 @@
         </div>
     </div>
     <script>
-        $(document).ready(function() {
-            var tags = {{ tags }}
-            quoter_init(tags);
-        });
+        {% if tags %}
+        var tags = {{ tags }};
+        {% endif %}
     </script>
 {% endblock %}
