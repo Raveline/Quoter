@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from models import Author, Source, Quote, SourceMetadata, SourceInfos, Tag, Folder
+from quoter.models import Author, Source, Quote, SourceMetadata, SourceInfos, Tag, Folder
 from django.utils.safestring import mark_safe
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, get_user, login, logout
