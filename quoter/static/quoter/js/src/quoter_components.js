@@ -1,7 +1,16 @@
+buildQuoter = function(folders_array, tags_array) {
+    React.render(<QuoterMenu folders={folders_array} tags={tags_array}/>, document.getElementById('quoterForms'));
+    React.render(<QuoterAccess/>, document.getElementById('main-menu-container'));
+}
+
 var QuoterMenu = React.createClass({
+    propTypes: {
+        folders: React.PropTypes.array.isRequired,
+        tags: React.PropTypes.array.isRequired
+    },
     render: function() { return (
-        <div class="tab-content">
-            <FolderForm/>
+        <div className="tab-content">
+            <FolderForm folders={this.props.folders}/>
             <FindForm/>
             <QuoteForm/>
             <SourceForm/>
@@ -11,34 +20,187 @@ var QuoterMenu = React.createClass({
     }
 });
 
+var PrefilledSelector = React.createClass({
+    propTypes: {
+        options: React.PropTypes.array.isRequired
+    },
+    getInitialState: function() {
+        return {
+            options: []
+        }
+    },
+    componentDidMount: function() {
+        this.buildOptions();
+    },
+    buildOptions: function() {
+        for (var i = 0; i < this.props.options.length; i++) {
+            var option = this.props.options[i];
+            this.addOption(i, option);
+        }
+    },
+    addOption: function(idx, option) {
+        this.state.options.push(
+            <option key={idx} value={option.value}>{option.name}</option>
+        )
+    },
+    render: function() { return (
+        <select>
+            {this.state.options}
+        </select>
+        );
+    }
+});
+
+var AjaxSelector = React.createClass({
+    propTypes: {
+        url: React.PropTypes.string.isRequired
+    },
+    getInitialState: function() {
+        return {
+            options: []
+        }
+    },
+    componentDidMount: function() {
+        // get your data
+        $.ajax({
+            url: this.props.url,
+            success: this.successHandler
+        })
+    },
+    successHandler: function(data) {
+        // assuming data is an array of {name: "foo", value: "bar"}
+        for (var i = 0; i < data.length; i++) {
+            var option = data[i];
+            this.state.options.push(
+                <option key={i} value={option.value}>{option.name}</option>
+            );
+        }
+    },
+    render: function() {
+        return this.transferPropsTo(
+            <select>{this.state.options}</select>
+        )
+    }
+});
+
+
+var QuoterAccess = React.createClass({
+    getInitialState: function() { return {activeTab: 0}},
+    
+    switchTab: function(idx) { this.setState({activeTab: idx}); },
+
+    paneModels: [
+        {tabName: "Choose folder", url:'#quote-folder'},
+        {tabName: "Find a quote", url:'#quote-find'},
+        {tabName: "Add a quote", url:'#quote-add'},
+        {tabName: "Add a source", url:'#source-add'},
+        {tabName: "Add an author", url:'#author-add'}],
+
+    render: function() { 
+        $('.tab-pane.active').removeClass('active');
+        $($('.tab-pane').get(this.state.activeTab)).addClass('active');
+        return (
+        <TabbedArea
+            paneModels={this.paneModels}
+            activeTab={this.state.activeTab}
+            switchTab={this.switchTab}/>
+    );
+    }
+});
+
+var TabbedArea = React.createClass({
+    propTypes : { paneModels: React.PropTypes.array.isRequired,
+                  activeTab: React.PropTypes.number.isRequired,
+                  switchTab: React.PropTypes.func.isRequired
+    },
+
+    handleClick: function(idx, e) {
+        e.preventDefault();
+        this.props.switchTab(idx);
+    },
+
+    render: function() {
+        return this.transferPropsTo(
+                <ul className="nav nav-tabs nav-pills nav-stacked">
+                    {this.renderTabs()}
+                </ul>);
+    },
+
+    renderTabs: function() {
+        return this.props.paneModels.map(function(tabName, idx) {
+            return (
+                <Tab key={idx} onClick={this.handleClick.bind(this, idx)}
+                               isActive={idx === this.props.activeTab}
+                               name={tabName.tabName}
+                               url={tabName.url}
+                />);
+        }.bind(this));
+    }
+});
+
+var Tab = React.createClass({
+    propTypes: {
+        isActive: React.PropTypes.bool.isRequired,
+        onClick: React.PropTypes.func.isRequired
+    },
+
+    render: function() {
+        var className = React.addons.classSet({active: this.props.isActive})
+        return (
+            <li className={className} onClick={this.props.onClick}>
+                <a href={this.props.url}>{this.props.name}</a>
+            </li>);
+    }
+});
+
+var QuoterNav = React.createClass({
+    render: function() { return (
+        <div className="col-md-2" id="main-menu-container">
+            <ul id="main-menu" className="nav nav-tabs nav-pills nav-stacked">
+                <li className="active"><a href="#quote-folder">Choose folder</a></li>
+                <li><a href="#quote-find">Find a quote</a></li>
+                <li><a href="#quote-add">Add a quote</a></li>
+                <li><a href="#source-add">Add a source</a></li>
+                <li><a href="#author-add">Add an author</a></li>
+                <li><a href="#">Export quoter</a></li>
+                <li><a href="#">Stats</a></li>
+            </ul>
+        </div>
+    );
+    }
+});
+
 var FolderForm = React.createClass({
+    propTypes: {
+        folders: React.PropTypes.array.isRequired
+    },
     render: function() { return (
-        <div id="quote-folder" class="tab-pane fade in active">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Pick a folder</h3>
+        <div id="quote-folder" className="tab-pane fade in active">
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">Pick a folder</h3>
                 </div>
-                <div class="panel-body">
+                <div className="panel-body">
                     <form method="POST" action="/folder/add" role="form">
                         <DjangoCSRF/>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="folder-name">New folder name</label>
-                            <div class="input-group">
-                                <input type="text" name="new-folder-name" class="form-control"/>
-                                <span class="input-group-btn">
-                                    <button id="createNewFolder" class="btn btn-default" type="submit">Create</button>
+                            <div className="input-group">
+                                <input type="text" name="new-folder-name" className="form-control"/>
+                                <span className="input-group-btn">
+                                    <button id="createNewFolder" className="btn btn-default" type="submit">Create</button>
                                 </span>
                             </div>
                         </div>
                     </form>
                     <form method="POST" action="/folder/pick" role="form">
                         <DjangoCSRF/>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="folder-pick">Pick an existing folder</label>
-                            <div class="input-group">
-                                <FolderPicker/>
-                                <span class="input-group-btn">
-                                    <button id="pickExistingFolder" class="btn btn-default" type="submit">Pick</button>
+                            <div className="input-group">
+                                <PrefilledSelector options={this.props.folders}/>
+                                <span className="input-group-btn">
+                                    <button id="pickExistingFolder" className="btn btn-default" type="submit">Pick</button>
                                 </span>
                             </div>
                         </div>
@@ -52,40 +214,40 @@ var FolderForm = React.createClass({
 
 var FindForm = React.createClass({
     render: function() { return (
-        <div id="quote-find" class="tab-pane fade in">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Find a quote</h3>
+        <div id="quote-find" className="tab-pane fade in">
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">Find a quote</h3>
                 </div>
-                <div class="panel-body">
+                <div className="panel-body">
                     <form role="form">
                         <DjangoCSRF/>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="find-word">By word in quote</label>
-                            <div class="input-group">
-                                <input type="text" name="find-word" class="form-control"/>
-                                <span class="input-group-btn">
-                                    <button id="findByWord" class="btn btn-default" type="button">Go</button>
+                            <div className="input-group">
+                                <input type="text" name="find-word" className="form-control"/>
+                                <span className="input-group-btn">
+                                    <button id="findByWord" className="btn btn-default" type="button">Go</button>
                                 </span>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="find-source">By source</label>
-                            <div class="input-group">
-                                <select class="form-control" name="find-source">
+                            <div className="input-group">
+                                <select className="form-control" name="find-source">
                                 </select>
-                                <span class="input-group-btn">
-                                    <button id="findBySource" class="btn btn-default" type="button">Go</button>
+                                <span className="input-group-btn">
+                                    <button id="findBySource" className="btn btn-default" type="button">Go</button>
                                 </span>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="find-author">By author</label>
-                            <div class="input-group">
-                                <select class="form-control" name="find-author">
+                            <div className="input-group">
+                                <select className="form-control" name="find-author">
                                 </select>
-                                <span class="input-group-btn">
-                                    <button id="findByAuthor" class="btn btn-default" type="button">Go</button>
+                                <span className="input-group-btn">
+                                    <button id="findByAuthor" className="btn btn-default" type="button">Go</button>
                                 </span>
                             </div>
                         </div>
@@ -100,55 +262,55 @@ var FindForm = React.createClass({
 
 var QuoteForm = React.createClass({
     render: function() { return (
-        <div id="quote-add" class="tab-pane fade">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Add a quote</h3>
+        <div id="quote-add" className="tab-pane fade">
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">Add a quote</h3>
                 </div>
-                <div class="panel-body">
+                <div className="panel-body">
                     <form role="form">
                         <DjangoCSRF/>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="source">Source</label>
-                            <div class="input-group">
-                                <select id="quote-add-source" class="form-control" name="source">
+                            <div className="input-group">
+                                <select id="quote-add-source" className="form-control" name="source">
                                 </select>
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default" id="button-new-source" type="button">Add new</button>
+                                <span className="input-group-btn">
+                                    <button className="btn btn-default" id="button-new-source" type="button">Add new</button>
                                 </span>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="author">Author</label>
-                            <div class="input-group">
-                                <select multiple id="quote-add-author" class="form-control" name="author">
+                            <div className="input-group">
+                                <select multiple id="quote-add-author" className="form-control" name="author">
                                 </select>
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default" id="button-new-author" type="button">Add new</button>
+                                <span className="input-group-btn">
+                                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
                                 </span>
                             </div>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="content">Quote</label>
-                            <textarea class="form-control" rows="6" name="content"></textarea>
+                            <textarea className="form-control" rows="6" name="content"></textarea>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="page">Page / Localisation</label>
-                            <input type="text" name="quote-page" class="form-control"/>
+                            <input type="text" name="quote-page" className="form-control"/>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="page">Tag</label>
-                            <input id="quote-tag-autocomplete" type="text" name="quote-tag" class="form-control typeahead"/>
+                            <input id="quote-tag-autocomplete" type="text" name="quote-tag" className="form-control typeahead"/>
                             <input type="hidden" value="" name="current-tag-value"/>
                         </div>
                         <div id="quote-tag-container">
                             <input type="hidden" value="" name="quote-tags"/>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="comment">Comment</label>
-                            <textarea class="form-control" rows="4" name="comment"></textarea>
+                            <textarea className="form-control" rows="4" name="comment"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-default">Save</button>
+                        <button type="submit" className="btn btn-default">Save</button>
                     </form>
                 </div>
             </div>
@@ -158,47 +320,47 @@ var QuoteForm = React.createClass({
     }
 });
 
-var QuoterMenu = React.createClass({
+var SourceForm = React.createClass({
     render: function() { return (
-        <div id="source-add" class="tab-pane fade">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Add a source</h3>
+        <div id="source-add" className="tab-pane fade">
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">Add a source</h3>
                 </div>
-                <div class="panel-body">
+                <div className="panel-body">
                     <form role="form">
                         <DjangoCSRF/>
-                        <div class="form-group author-group">
+                        <div className="form-group author-group">
                             <label for="source-author">Author(s)</label>
-                            <div class="input-group">
-                                <select id="source-add-author" class="form-control" name="source-author">
+                            <div className="input-group">
+                                <select id="source-add-author" className="form-control" name="source-author">
                                 </select>
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default" id="button-new-author" type="button">Add new</button>
+                                <span className="input-group-btn">
+                                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
                                 </span>
                             </div>
                         </div>
-                        <div class="form-group" id="source-author-adder">
+                        <div className="form-group" id="source-author-adder">
                             <a href="#" id="source-author-add">Add another author to this source.</a>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="title">Title</label>
-                            <input type="text" name="title" class="form-control"/>
+                            <input type="text" name="title" className="form-control"/>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label>Metadata</label>
                             <div id="metadata-container">
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <input name="metadata1" type="text" class="form-control" placeholder="Information"/>
+                                <div className="row">
+                                    <div className="col-xs-4">
+                                        <input name="metadata1" type="text" className="form-control" placeholder="Information"/>
                                     </div>
-                                    <div class="col-xs-4">
-                                        <input name="metadata2" type="text" class="form-control metadata-last" placeholder="Value"/>
+                                    <div className="col-xs-4">
+                                        <input name="metadata2" type="text" className="form-control metadata-last" placeholder="Value"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-default">Save</button>
+                        <button type="submit" className="btn btn-default">Save</button>
                     </form>
                 </div>
             </div>
@@ -208,29 +370,29 @@ var QuoterMenu = React.createClass({
 });
 
 
-var AuthorMenu = React.createClass({
+var AuthorForm = React.createClass({
     render: function() { return (
-        <div id="author-add" class="tab-pane fade">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Add an author</h3>
+        <div id="author-add" className="tab-pane fade">
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">Add an author</h3>
                 </div>
-                <div class="panel-body">
+                <div className="panel-body">
                     <form role="form">
                         <DjangoCSRF/>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="author-first-name">First name</label>
-                            <input type="text" name="author-first-name" class="form-control"/>
+                            <input type="text" name="author-first-name" className="form-control"/>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="author-last-name">Last name</label>
-                            <input type="text" name="author-last-name" class="form-control"/>
+                            <input type="text" name="author-last-name" className="form-control"/>
                         </div>
-                        <div class="form-group">
+                        <div className="form-group">
                             <label for="author-surname">Surname</label>
-                            <input type="text" name="author-surname" class="form-control"/>
+                            <input type="text" name="author-surname" className="form-control"/>
                         </div>
-                        <button type="submit" class="btn btn-default">Save</button>
+                        <button type="submit" className="btn btn-default">Save</button>
                     </form>
                 </div>
             </div>
@@ -248,9 +410,6 @@ var DjangoCSRF = React.createClass({
     }
 });
 
-$(document).ready(function() {
-    React.render(<QuoterMenu/>, document.getElementById('quoterForms'));
-});
 
 /** Django CSRF **/
 function getCookie(name) {
