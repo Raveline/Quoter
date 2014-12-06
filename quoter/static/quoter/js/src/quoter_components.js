@@ -170,6 +170,47 @@ var QuoterNav = React.createClass({
     }
 });
 
+var AjaxPoster = {
+    post: function(url, data, callback) {
+        var jqxhr = $.post(url, data, function(response) {
+            if (response.result == "success") {
+                callback();
+            } else {
+                // alert of an error
+            }
+        }).done(function() { })
+          .fail(function() { });
+    }
+}
+
+var AddFolderForm = React.createClass({
+    mixins: [AjaxPoster],
+    render: function() { return (
+        <form method="POST" action="/folder/add" role="form" onSubmit={this.handleSubmit}>
+            <DjangoCSRF/>
+            <div className="form-group">
+                <label for="folder-name">New folder name</label>
+                <div className="input-group">
+                    <input ref="new_folder_name" type="text" name="new-folder-name" className="form-control"/>
+                    <span className="input-group-btn">
+                        <button id="createNewFolder" className="btn btn-default" type="submit">Create</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+        );
+    },
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var new_folder_name = this.refs.new_folder_name.getDOMNode().value.trim();
+        if (!new_folder_name) {
+            return;
+        }
+        this.refs.new_folder_name.getDOMNode().value = '';
+        this.post("/folder/add", {'new-folder-name' : new_folder_name }, function() { console.log('DONE !') });
+    }
+})
+
 var FolderForm = React.createClass({
     propTypes: {
         folders: React.PropTypes.array.isRequired
@@ -181,18 +222,7 @@ var FolderForm = React.createClass({
                     <h3 className="panel-title">Pick a folder</h3>
                 </div>
                 <div className="panel-body">
-                    <form method="POST" action="/folder/add" role="form">
-                        <DjangoCSRF/>
-                        <div className="form-group">
-                            <label for="folder-name">New folder name</label>
-                            <div className="input-group">
-                                <input type="text" name="new-folder-name" className="form-control"/>
-                                <span className="input-group-btn">
-                                    <button id="createNewFolder" className="btn btn-default" type="submit">Create</button>
-                                </span>
-                            </div>
-                        </div>
-                    </form>
+                    <AddFolderForm/>
                     <form method="POST" action="/folder/pick" role="form">
                         <DjangoCSRF/>
                         <div className="form-group">
@@ -450,7 +480,7 @@ $.ajaxSetup({
         // Send the token to same-origin, relative URLs only.
         // Send the token only if the method warrants CSRF protection
         // Using the CSRFToken value acquired earlier
-        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
         }
     }
 });
