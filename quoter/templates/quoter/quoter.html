@@ -1,25 +1,15 @@
 {% extends "quoter/structure.html" %}
 {% block content %}
         <div class="well well-sm">Logged as {{ user.username }} || Current folder : {{ current_folder_name }} || <a href="/logout">Logout</a></div>
-        <div class="col-md-2" id="main-menu-container">
-            <ul id="main-menu" class="nav nav-tabs nav-pills nav-stacked">
-                <li class="active"><a href="#quote-folder">Choose folder</a></li>
-                <li><a href="#quote-find">Find a quote</a></li>
-                <li><a href="#quote-add">Add a quote</a></li>
-                <li><a href="#source-add">Add a source</a></li>
-                <li><a href="#author-add">Add an author</a></li>
-                <li><a href="#">Export quoter</a></li>
-                <li><a href="#">Stats</a></li>
-            </ul>
+        <div class="col-md-2" role="navigation" id="main-menu-container">
         </div>
         <!-- Content -->
         <div class="col-md-8" id="quoterForms">
-            <QuoterMenu/>
         </div>
     </div>
     <script>
-        {% if tags %}
-        var tags = {{ tags }};
-        {% endif %}
+        $(document).ready(function() {
+            buildQuoter({{ folders }}, {{ tags }});
+        });
     </script>
 {% endblock %}
