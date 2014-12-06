@@ -29,7 +29,7 @@ var PrefilledSelector = React.createClass({
             options: []
         }
     },
-    componentDidMount: function() {
+    componentWillMount: function() {
         this.buildOptions();
     },
     buildOptions: function() {
@@ -40,11 +40,11 @@ var PrefilledSelector = React.createClass({
     },
     addOption: function(idx, option) {
         this.state.options.push(
-            <option key={idx} value={option.value}>{option.name}</option>
+            <option key={idx} value={option.key}>{option.value}</option>
         )
     },
     render: function() { return (
-        <select>
+        <select className="form-control">
             {this.state.options}
         </select>
         );
