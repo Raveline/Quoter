@@ -37,12 +37,12 @@ def printHome(request, message):
     """Shortcut for printing the login page."""
     return render(request, 'quoter/login.html', { 'message' : message })
 
-
 def userHome(request):
     """Display the main page. Quoter being a browser-app, almost everything
     is displayed in one page. However, if we do not have a connected user, we will
     have to redirect to a login and database selection page."""
     context = { 'folders' : get_folders_for(request)
+            , 'tags' : json_string_for_tags(request)
             , 'current_folder_name' : get_current_folder_name(request) }
     return render(request, 'quoter/quoter.html', context)
 
@@ -297,7 +297,11 @@ def set_folder_to(request, folder):
 
 def get_folders_for(request):
     user = get_user(request)
-    return Folder.objects.filter(user = user)
+    result = []
+    folders = Folder.objects.filter(user = user)
+    for f in folders:
+        result.append({'value':f.name, 'key':str(f.pk) })
+    return mark_safe(json.dumps(result))
 
 def get_current_folder_id(request):
     return request.session['folder']
@@ -320,10 +324,11 @@ def jsonify_quote_array(quote_array):
                     'page': quote.page})
     return all_quotes
 
-def json_string_for_tags():
+def json_string_for_tags(request):
     """Return every existing tag in a nice, json-like string, so that
     our javascript is able to handle it."""
-    tags = Tag.objects.all()
+    folder_id = get_current_folder_id(request)
+    tags = Tag.objects.filter(folder_id = folder_id)
     result = []
     for tag in tags:
         result.append({'display':tag.name, 'value':str(tag.pk) })
