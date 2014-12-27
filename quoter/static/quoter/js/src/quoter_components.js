@@ -6,15 +6,48 @@ buildQuoter = function(folders_array, tags_array) {
 var QuoterMenu = React.createClass({
     propTypes: {
         folders: React.PropTypes.array.isRequired,
-        tags: React.PropTypes.array.isRequired
+        tags: React.PropTypes.array.isRequired,
     },
-    render: function() { return (
+    getInitialState: function() {
+        return {
+            authors: [],
+            tags: [],
+            sources : []
+        }
+    },
+    componentWillMount: function() {
+        $.get('/source/all', function(data) {
+            this.setState({sources: data.data});
+        }.bind(this));
+        $.get('/author/all', function(data) {
+            this.setState({authors: data.data});
+        }.bind(this));
+        this.state.tags = this.props.tags.slice();
+    },
+    buildState: function() {
+        for (var i = 0; i < this.props.folders.lenght; i++) {
+        }
+    },
+    addAuthor: function(author) {
+        var authors = this.state.authors;
+        authors = authors.concat(author);
+        this.setState({authors: authors});
+    },
+    addTag: function() {
+    },
+    addSource: function(source) {
+        var sources = this.state.sourcesj;
+        sources.concat(source);
+        this.setState({sources: sources});
+    },
+    render: function() { 
+        return (
         <div className="tab-content">
             <FolderForm folders={this.props.folders}/>
-            <FindForm/>
+            <FindForm tags = {this.state.tags} sources={this.state.sources} authors={this.state.authors} />
             <QuoteForm/>
-            <SourceForm/>
-            <AuthorForm/>
+            <SourceForm authors={this.state.authors} sources={this.state.sources} addSource={this.addSource}/>
+            <AuthorForm authors={this.state.authors} addAuthor={this.addAuthor}/>
         </div>
     );
     }
@@ -32,20 +65,23 @@ var PrefilledSelector = React.createClass({
     componentWillMount: function() {
         this.buildOptions();
     },
+    componentWillUpdate: function(newProps, newState) {
+    },
     buildOptions: function() {
+        options = [];
         for (var i = 0; i < this.props.options.length; i++) {
             var option = this.props.options[i];
-            this.addOption(i, option);
+            options.push(
+                <option key={i} value={option.value}>{option.display}</option>
+            );
         }
+        return options;
     },
-    addOption: function(idx, option) {
-        this.state.options.push(
-            <option key={idx} value={option.key}>{option.value}</option>
-        )
-    },
-    render: function() { return (
+    render: function() { 
+        options = this.buildOptions();
+        return (
         <select className="form-control">
-            {this.state.options}
+            {options}
         </select>
         );
     }
@@ -86,16 +122,13 @@ var AjaxSelector = React.createClass({
 
 var QuoterAccess = React.createClass({
     getInitialState: function() { return {activeTab: 0}},
-    
     switchTab: function(idx) { this.setState({activeTab: idx}); },
-
     paneModels: [
         {tabName: "Choose folder", url:'#quote-folder'},
         {tabName: "Find a quote", url:'#quote-find'},
         {tabName: "Add a quote", url:'#quote-add'},
         {tabName: "Add a source", url:'#source-add'},
         {tabName: "Add an author", url:'#author-add'}],
-
     render: function() { 
         $('.tab-pane.active').removeClass('active');
         $($('.tab-pane').get(this.state.activeTab)).addClass('active');
@@ -109,7 +142,7 @@ var QuoterAccess = React.createClass({
 });
 
 var TabbedArea = React.createClass({
-    propTypes : { paneModels: React.PropTypes.array.isRequired,
+    propTypes: { paneModels: React.PropTypes.array.isRequired,
                   activeTab: React.PropTypes.number.isRequired,
                   switchTab: React.PropTypes.func.isRequired
     },
@@ -174,7 +207,7 @@ var AjaxPoster = {
     post: function(url, data, callback) {
         var jqxhr = $.post(url, data, function(response) {
             if (response.result == "success") {
-                callback();
+                callback(response);
             } else {
                 // alert of an error
             }
@@ -189,7 +222,7 @@ var AddFolderForm = React.createClass({
         <form method="POST" action="/folder/add" role="form" onSubmit={this.handleSubmit}>
             <DjangoCSRF/>
             <div className="form-group">
-                <label for="folder-name">New folder name</label>
+                <label htmlFor="folder-name">New folder name</label>
                 <div className="input-group">
                     <input ref="new_folder_name" type="text" name="new-folder-name" className="form-control"/>
                     <span className="input-group-btn">
@@ -226,7 +259,7 @@ var FolderForm = React.createClass({
                     <form method="POST" action="/folder/pick" role="form">
                         <DjangoCSRF/>
                         <div className="form-group">
-                            <label for="folder-pick">Pick an existing folder</label>
+                            <label htmlFor="folder-pick">Pick an existing folder</label>
                             <div className="input-group">
                                 <PrefilledSelector options={this.props.folders}/>
                                 <span className="input-group-btn">
@@ -238,9 +271,64 @@ var FolderForm = React.createClass({
                 </div>
             </div>
         </div>
-);
-}
+    );
+    }
 });
+
+var FindByWordForm = React.createClass({
+    render: function() { return (
+        <form role="form">
+            <DjangoCSRF/>
+            <div className="form-group">
+                <label htmlFor="find-word">By word in quote</label>
+                <div className="input-group">
+                    <input type="text" name="find-word" className="form-control"/>
+                    <span className="input-group-btn">
+                        <button id="findByWord" className="btn btn-default" type="button">Go</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+    );
+    }
+});
+
+var FindBySourceForm = React.createClass({
+    render: function() { return (
+        <form role="form">
+            <DjangoCSRF/>
+            <div className="form-group">
+                <label htmlFor="find-source">By source</label>
+                <div className="input-group">
+                    <select className="form-control" name="find-source">
+                    </select>
+                    <span className="input-group-btn">
+                        <button id="findBySource" className="btn btn-default" type="button">Go</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+        );
+    }
+});
+
+var FindByAuthorForm = React.createClass({
+    render: function() { return (
+        <form role="form">
+            <DjangoCSRF/>
+            <div className="form-group">
+                <label htmlFor="find-author">By author</label>
+                <div className="input-group">
+                    <select className="form-control" name="find-author">
+                    </select>
+                    <span className="input-group-btn">
+                        <button id="findByAuthor" className="btn btn-default" type="button">Go</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+    )}
+})
 
 var FindForm = React.createClass({
     render: function() { return (
@@ -250,38 +338,9 @@ var FindForm = React.createClass({
                     <h3 className="panel-title">Find a quote</h3>
                 </div>
                 <div className="panel-body">
-                    <form role="form">
-                        <DjangoCSRF/>
-                        <div className="form-group">
-                            <label for="find-word">By word in quote</label>
-                            <div className="input-group">
-                                <input type="text" name="find-word" className="form-control"/>
-                                <span className="input-group-btn">
-                                    <button id="findByWord" className="btn btn-default" type="button">Go</button>
-                                </span>
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label for="find-source">By source</label>
-                            <div className="input-group">
-                                <select className="form-control" name="find-source">
-                                </select>
-                                <span className="input-group-btn">
-                                    <button id="findBySource" className="btn btn-default" type="button">Go</button>
-                                </span>
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label for="find-author">By author</label>
-                            <div className="input-group">
-                                <select className="form-control" name="find-author">
-                                </select>
-                                <span className="input-group-btn">
-                                    <button id="findByAuthor" className="btn btn-default" type="button">Go</button>
-                                </span>
-                            </div>
-                        </div>
-                    </form>
+                    <FindByWordForm/>
+                    <FindBySourceForm/>
+                    <FindByAuthorForm/>
                 </div>
             </div>
             <div id="quote-find-results"></div>
@@ -292,7 +351,7 @@ var FindForm = React.createClass({
 
 var QuoteForm = React.createClass({
     render: function() { return (
-        <div id="quote-add" className="tab-pane fade">
+        <div id="quote-add" className="tab-pane fade in">
             <div className="panel panel-default">
                 <div className="panel-heading">
                     <h3 className="panel-title">Add a quote</h3>
@@ -301,7 +360,7 @@ var QuoteForm = React.createClass({
                     <form role="form">
                         <DjangoCSRF/>
                         <div className="form-group">
-                            <label for="source">Source</label>
+                            <label htmlFor="source">Source</label>
                             <div className="input-group">
                                 <select id="quote-add-source" className="form-control" name="source">
                                 </select>
@@ -311,7 +370,7 @@ var QuoteForm = React.createClass({
                             </div>
                         </div>
                         <div className="form-group">
-                            <label for="author">Author</label>
+                            <label htmlFor="author">Author</label>
                             <div className="input-group">
                                 <select multiple id="quote-add-author" className="form-control" name="author">
                                 </select>
@@ -321,15 +380,15 @@ var QuoteForm = React.createClass({
                             </div>
                         </div>
                         <div className="form-group">
-                            <label for="content">Quote</label>
+                            <label htmlFor="content">Quote</label>
                             <textarea className="form-control" rows="6" name="content"></textarea>
                         </div>
                         <div className="form-group">
-                            <label for="page">Page / Localisation</label>
+                            <label htmlFor="page">Page / Localisation</label>
                             <input type="text" name="quote-page" className="form-control"/>
                         </div>
                         <div className="form-group">
-                            <label for="page">Tag</label>
+                            <label htmlFor="page">Tag</label>
                             <input id="quote-tag-autocomplete" type="text" name="quote-tag" className="form-control typeahead"/>
                             <input type="hidden" value="" name="current-tag-value"/>
                         </div>
@@ -337,7 +396,7 @@ var QuoteForm = React.createClass({
                             <input type="hidden" value="" name="quote-tags"/>
                         </div>
                         <div className="form-group">
-                            <label for="comment">Comment</label>
+                            <label htmlFor="comment">Comment</label>
                             <textarea className="form-control" rows="4" name="comment"></textarea>
                         </div>
                         <button type="submit" className="btn btn-default">Save</button>
@@ -345,14 +404,18 @@ var QuoteForm = React.createClass({
                 </div>
             </div>
         </div>
-
     );
     }
 });
 
 var SourceForm = React.createClass({
+    propTypes: {
+        addSource: React.PropTypes.func.isRequired,
+        authors: React.PropTypes.array.isRequired,
+        sources: React.PropTypes.array.isRequired
+    },
     render: function() { return (
-        <div id="source-add" className="tab-pane fade">
+        <div id="source-add" className="tab-pane fade in">
             <div className="panel panel-default">
                 <div className="panel-heading">
                     <h3 className="panel-title">Add a source</h3>
@@ -361,20 +424,19 @@ var SourceForm = React.createClass({
                     <form role="form">
                         <DjangoCSRF/>
                         <div className="form-group author-group">
-                            <label for="source-author">Author(s)</label>
+                            <label htmlFor="source_author">Author(s)</label>
                             <div className="input-group">
-                                <select id="source-add-author" className="form-control" name="source-author">
-                                </select>
+                                <PrefilledSelector options={this.props.authors}/>
                                 <span className="input-group-btn">
                                     <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
                                 </span>
                             </div>
                         </div>
-                        <div className="form-group" id="source-author-adder">
+                        <div className="form-group" id="source_author_adder">
                             <a href="#" id="source-author-add">Add another author to this source.</a>
                         </div>
                         <div className="form-group">
-                            <label for="title">Title</label>
+                            <label htmlFor="title">Title</label>
                             <input type="text" name="title" className="form-control"/>
                         </div>
                         <div className="form-group">
@@ -399,28 +461,52 @@ var SourceForm = React.createClass({
     }
 });
 
-
 var AuthorForm = React.createClass({
+    mixins: [AjaxPoster],
+    propTypes: {
+        addAuthor: React.PropTypes.func.isRequired,
+        authors: React.PropTypes.array.isRequired
+    },
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var first_name = this.refs.author_first_name.getDOMNode().value.trim();
+        var last_name = this.refs.author_last_name.getDOMNode().value.trim();
+        var surname = this.refs.author_surname.getDOMNode().value.trim();
+        if (!first_name && !last_name && !surname) {
+            return;
+        }
+        this.refs.author_first_name.getDOMNode().value = '';
+        this.refs.author_last_name.getDOMNode().value = '';
+        this.refs.author_surname.getDOMNode().value = '';
+        // Build author...
+        var newAuthor = { 'first_name' : first_name,
+                          'last_name' : last_name,
+                          'surname' : surname }
+        // Call adder...
+        this.post('author/new', newAuthor, function(info) {
+                this.props.addAuthor(info.newObject);
+            }.bind(this));
+    },
     render: function() { return (
-        <div id="author-add" className="tab-pane fade">
+        <div id="author-add" className="tab-pane fade in">
             <div className="panel panel-default">
                 <div className="panel-heading">
                     <h3 className="panel-title">Add an author</h3>
                 </div>
                 <div className="panel-body">
-                    <form role="form">
+                    <form role="form" onSubmit={this.handleSubmit}>
                         <DjangoCSRF/>
                         <div className="form-group">
-                            <label for="author-first-name">First name</label>
-                            <input type="text" name="author-first-name" className="form-control"/>
+                            <label htmlFor="author_first_name">First name</label>
+                            <input type="text" ref="author_first_name" className="form-control"/>
                         </div>
                         <div className="form-group">
-                            <label for="author-last-name">Last name</label>
-                            <input type="text" name="author-last-name" className="form-control"/>
+                            <label htmlFor="author_last_name">Last name</label>
+                            <input type="text" ref="author_last_name" className="form-control"/>
                         </div>
                         <div className="form-group">
-                            <label for="author-surname">Surname</label>
-                            <input type="text" name="author-surname" className="form-control"/>
+                            <label htmlFor="author_surname">Surname</label>
+                            <input type="text" ref="author_surname" className="form-control"/>
                         </div>
                         <button type="submit" className="btn btn-default">Save</button>
                     </form>
@@ -431,6 +517,7 @@ var AuthorForm = React.createClass({
     }
 });
 
+/** Django CSRF **/
 var DjangoCSRF = React.createClass({
     render: function() { 
         var csrfToken = getCookie('csrftoken');
@@ -441,7 +528,6 @@ var DjangoCSRF = React.createClass({
 });
 
 
-/** Django CSRF **/
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
