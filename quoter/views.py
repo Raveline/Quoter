@@ -66,7 +66,7 @@ def addAuthor(request):
                             ,surname = request.POST["surname"]
                             ,folder_id = folder_id)
             new_author.save()
-            return json_success("Added : " + str(new_author))
+            return json_creation_success(new_author)
         else:
             return json_error('Missing fields.')
     else:
@@ -300,7 +300,7 @@ def get_folders_for(request):
     result = []
     folders = Folder.objects.filter(user = user)
     for f in folders:
-        result.append({'value':f.name, 'key':str(f.pk) })
+        result.append({'display':f.name, 'value':str(f.pk) })
     return mark_safe(json.dumps(result))
 
 def get_current_folder_id(request):
@@ -313,7 +313,7 @@ def get_current_folder_name(request):
 def jsonify_object_array(object_array):
     all_objects = []
     for item in object_array:
-        all_objects.append({'pk' : item.pk, 'display' : str(item) })
+        all_objects.append({'value' : item.pk, 'display' : str(item) })
     return all_objects
 
 def jsonify_quote_array(quote_array):
@@ -337,6 +337,20 @@ def json_string_for_tags(request):
 def json_quotes(quotes):
     response = { 'result' : 'success',
                 'data' : jsonify_quote_array(quotes) }
+    return json_response(response)
+
+def json_creation_success(obj):
+    '''Create a JSON response to inform the client an object
+    has been successfuly created.
+    
+    The JSON message will contains 'success' for the result field, and the 
+    necessary information on the created object in the newObject field.
+    
+    The parameter must be a Django model object, so that we can make
+    a string out of it, and we can have give its primary key.'''
+    response = {}
+    response['result'] = 'success'
+    response['newObject'] = { 'display': str(obj), 'value' : obj.pk }
     return json_response(response)
 
 def json_success(msg):
