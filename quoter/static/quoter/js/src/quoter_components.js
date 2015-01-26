@@ -55,17 +55,23 @@ var QuoterMenu = React.createClass({
 
 var PrefilledSelector = React.createClass({
     propTypes: {
-        options: React.PropTypes.array.isRequired
+        options: React.PropTypes.array.isRequired,
     },
     getInitialState: function() {
         return {
-            options: []
+            options: [],
+            selected: 0
         }
     },
     componentWillMount: function() {
         this.buildOptions();
+        if (this.state.selected == 0 && this.props.options.length > 0) {
+            this.setState({'selected':this.props.options[0].value});
+        }
     },
-    componentWillUpdate: function(newProps, newState) {
+    handleChange: function() {
+        var newValue = this.refs.selector.getDOMNode().value;
+        this.setState({'selected':newValue});
     },
     buildOptions: function() {
         options = [];
@@ -77,12 +83,15 @@ var PrefilledSelector = React.createClass({
         }
         return options;
     },
+    getValue: function() {
+        return this.refs.selector.getDOMNode().value;
+    },
     render: function() { 
         options = this.buildOptions();
         return (
-        <select className="form-control">
-            {options}
-        </select>
+            select = <select value={this.state.selected} onChange={this.handleChange} ref="selector" className="form-control">;
+                {options}
+            </select>
         );
     }
 });
@@ -408,6 +417,66 @@ var QuoteForm = React.createClass({
     }
 });
 
+var InfiniteAuthorSelector = React.createClass({
+    propTypes: {
+        authors: React.PropTypes.array.isRequired
+    },
+    getInitialState: function() { 
+        return { numAuthors: 1 }
+    },
+    propTypes: {
+        authors: React.PropTypes.array.isRequired
+    },
+    addAuthor: function(e) {
+        if (e) {
+            e.preventDefault();
+        }
+        this.setState({numAuthors : this.state.numAuthors + 1});
+    },
+    reinitalize: function() {
+        this.setState(getInitialState());
+    },
+    buildAuthors: function() {
+        authors = [];
+        for (i = 0; i < this.state.numAuthors; i++) {
+            authors.push(
+                <div className="input-group">
+                    <PrefilledSelector options={this.props.authors} key={i} ref={i}/>
+                    <span className="input-group-btn">
+                        <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
+                    </span>
+                </div>
+            )
+        }
+        return authors;
+    },
+    getValue: function() {
+        results = [];
+        for (var i = 0; i < this.state.numAuthors; i++) {
+            if (this.refs[i]) {
+                results.push(this.refs[i].getValue());
+            }
+        }
+        return results;
+    },
+    render: function() { 
+        authors = this.buildAuthors();
+        this.authors_input = authors;
+        console.log(this.getValue());
+        return (
+            <div id="authors_for_source">
+                <div className="form-group author-group">
+                    <label htmlFor="source_author">Author(s)</label>
+                    {authors}
+                </div>
+                <div className="form-group" id="source_author_adder">
+                    <a onClick={this.addAuthor} href="#" id="source-author-add">Add another author to this source.</a>
+                </div>
+            </div>
+        );
+    }
+});
+
 var SourceForm = React.createClass({
     propTypes: {
         addSource: React.PropTypes.func.isRequired,
@@ -423,18 +492,7 @@ var SourceForm = React.createClass({
                 <div className="panel-body">
                     <form role="form">
                         <DjangoCSRF/>
-                        <div className="form-group author-group">
-                            <label htmlFor="source_author">Author(s)</label>
-                            <div className="input-group">
-                                <PrefilledSelector options={this.props.authors}/>
-                                <span className="input-group-btn">
-                                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
-                                </span>
-                            </div>
-                        </div>
-                        <div className="form-group" id="source_author_adder">
-                            <a href="#" id="source-author-add">Add another author to this source.</a>
-                        </div>
+                        <InfiniteAuthorSelector authors={this.props.authors}/>
                         <div className="form-group">
                             <label htmlFor="title">Title</label>
                             <input type="text" name="title" className="form-control"/>
