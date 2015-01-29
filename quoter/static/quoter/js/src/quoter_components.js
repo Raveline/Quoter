@@ -59,14 +59,17 @@ var PrefilledSelector = React.createClass({
     },
     getInitialState: function() {
         return {
-            options: [],
             selected: 0
         }
     },
     componentWillMount: function() {
         this.buildOptions();
-        if (this.state.selected == 0 && this.props.options.length > 0) {
-            this.setState({'selected':this.props.options[0].value});
+    },
+    componentWillReceiveProps: function(newprops) {
+        if (this.state.selected == 0 
+            && newprops.options 
+            && newprops.options.length > 0) {
+            this.setState({'selected':newprops.options[0].value});
         }
     },
     handleChange: function() {
@@ -89,7 +92,7 @@ var PrefilledSelector = React.createClass({
     render: function() { 
         options = this.buildOptions();
         return (
-            select = <select value={this.state.selected} onChange={this.handleChange} ref="selector" className="form-control">;
+            <select value={this.state.selected} onChange={this.handleChange} ref="selector" className="form-control">;
                 {options}
             </select>
         );
@@ -462,7 +465,6 @@ var InfiniteAuthorSelector = React.createClass({
     render: function() { 
         authors = this.buildAuthors();
         this.authors_input = authors;
-        console.log(this.getValue());
         return (
             <div id="authors_for_source">
                 <div className="form-group author-group">
@@ -474,6 +476,72 @@ var InfiniteAuthorSelector = React.createClass({
                 </div>
             </div>
         );
+    }
+});
+
+var SingleMetadata = React.createClass({
+    propTypes: {
+        blurCallback: React.PropTypes.func.isRequired,
+        childNumber: React.PropTypes.number.isRequired
+    },
+    onBlur: function() {
+        if (this.refs.metadata2.getDOMNode().value) {
+            this.props.blurCallback(this.props.childNumber);
+        }
+    },
+    getValue: function() {
+        meta1 = this.refs.metadata1.getDOMNode().value;
+        meta2 = this.refs.metadata2.getDOMNode().value;
+        if (meta1 && meta2) {
+            return [meta1, meta2];
+        }
+        return [];
+    },
+    render: function() {
+        return (
+            <div id="metadata-container">
+                <div className="row">
+                    <div className="col-xs-4">
+                        <input ref="metadata1" name="metadata1" type="text" className="form-control" placeholder="Information"/>
+                    </div>
+                    <div className="col-xs-4">
+                        <input ref="metadata2" name="metadata2" type="text" className="form-control" onBlur={this.onBlur} placeholder="Value"/>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+});
+
+var InfiniteMetadata = React.createClass({
+    getInitialState: function() {
+        return { metadataNumber: 1 }
+    },
+    onChildBlur: function(child_key) {
+        console.log(child_key);
+        if (child_key === this.state.metadataNumber) {
+            this.setState({metadataNumber : this.state.metadataNumber + 1});
+        }
+        console.log(this.getValues());
+    },
+    getValues: function() {
+        values = {};
+        for (var i = 0; i < this.state.metadataNumber; i++) {
+            meta = this.refs[i].getValue();
+            if (meta) {
+                values[meta[0]] = meta[1];
+            }
+        }
+        return values;
+    },
+    render: function() {
+        var metadata = [];
+        for (var i = 0; i < this.state.metadataNumber; i++) {
+            metadata.push(
+                <SingleMetadata ref={i} childNumber={i+1} blurCallback={this.onChildBlur}/>
+            );
+        }
+        return (<div>{metadata}</div>);
     }
 });
 
@@ -499,16 +567,7 @@ var SourceForm = React.createClass({
                         </div>
                         <div className="form-group">
                             <label>Metadata</label>
-                            <div id="metadata-container">
-                                <div className="row">
-                                    <div className="col-xs-4">
-                                        <input name="metadata1" type="text" className="form-control" placeholder="Information"/>
-                                    </div>
-                                    <div className="col-xs-4">
-                                        <input name="metadata2" type="text" className="form-control metadata-last" placeholder="Value"/>
-                                    </div>
-                                </div>
-                            </div>
+                            <InfiniteMetadata/>
                         </div>
                         <button type="submit" className="btn btn-default">Save</button>
                     </form>
