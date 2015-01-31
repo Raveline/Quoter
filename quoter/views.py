@@ -75,16 +75,19 @@ def addAuthor(request):
 @login_required
 def addSource(request):
     if request.method == 'POST':
-        if mustHaveFields(["authors", "title", "metadatas"], request.POST):
-            authors = read_authors(request.POST["authors"])
-            title = request.POST["title"]
-            metadatas = read_metadatas(request.POST["metadatas"])
-            folder_id = get_current_folder_id(request)
-            source = Source(title = title, folder_id = folder_id)
-            source.save()
-            source.authors = authors
-            source.metadatas = metadatas
-            return json_success("Added : " + str(source))
+        if mustHaveFields(["authors", "title", "metadata"], request.POST):
+            try:
+                authors = read_authors(request.POST["authors"])
+                title = request.POST["title"]
+                metadata = read_metadatas(request.POST["metadata"])
+                folder_id = get_current_folder_id(request)
+                source = Source(title = title, folder_id = folder_id)
+                source.save()
+                source.authors = authors
+                source.metadatas = metadata
+                return json_success("Added : " + str(source))
+            except Exception as e:
+                return json_error(str(e))
         else:
             return json_error('Missing fields.')
     else:
@@ -264,8 +267,8 @@ def read_metadatas(metadatas_string):
 
 def transform_metadatas_to_dict(metadatas_string):
     if len(metadatas_string) > 0:
-        return dict(item.split("###")
-                    for item in metadatas_string.split("@@@"))
+        preparsed = metadatas_string.replace("'", "\"")
+        return json.loads(preparsed)
     else:
         return {}
 
