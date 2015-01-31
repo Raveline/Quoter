@@ -57,6 +57,11 @@ var PrefilledSelector = React.createClass({
     propTypes: {
         options: React.PropTypes.array.isRequired,
     },
+    empty: function() {
+        if (this.props.options.length > 0) {
+            this.setState({'selected':this.props.options[0].value});
+        }
+    },
     getInitialState: function() {
         return {
             selected: 0
@@ -427,6 +432,10 @@ var InfiniteAuthorSelector = React.createClass({
     getInitialState: function() { 
         return { numAuthors: 1 }
     },
+    empty: function() {
+        this.refs[0].empty();
+        this.setState({numAuthors:1});
+    },
     propTypes: {
         authors: React.PropTypes.array.isRequired
     },
@@ -489,6 +498,10 @@ var SingleMetadata = React.createClass({
             this.props.blurCallback(this.props.childNumber);
         }
     },
+    empty: function() {
+        this.refs.metadata1.getDOMNode().value = '';
+        this.refs.metadata2.getDOMNode().value = '';
+    },
     getValue: function() {
         meta1 = this.refs.metadata1.getDOMNode().value;
         meta2 = this.refs.metadata2.getDOMNode().value;
@@ -516,6 +529,10 @@ var SingleMetadata = React.createClass({
 var InfiniteMetadata = React.createClass({
     getInitialState: function() {
         return { metadataNumber: 1 }
+    },
+    empty: function() {
+        this.refs[0].empty();
+        this.setState({metadataNumber:1});
     },
     onChildBlur: function(child_key) {
         console.log(child_key);
@@ -546,10 +563,31 @@ var InfiniteMetadata = React.createClass({
 });
 
 var SourceForm = React.createClass({
+    mixins: [AjaxPoster],
     propTypes: {
         addSource: React.PropTypes.func.isRequired,
         authors: React.PropTypes.array.isRequired,
         sources: React.PropTypes.array.isRequired
+    },
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var title = this.refs.title.getDOMNode().value.trim();
+        var authors = this.refs.authors.getValue();
+        var metadata = this.refs.metadata.getValues();
+        if (!title) {
+            return;
+        }
+        this.refs.title.getDOMNode().value = '';
+        this.refs.authors.empty();
+        this.refs.metadata.empty();
+        // Build source
+        var newSource = { 'title' : title,
+                          'authors' : authors.toString(),
+                          'metadata' : JSON.stringify(metadata)}
+        // Call adder...
+        this.post('source/new', newSource, function(info) {
+                this.props.addSource(info.newObject);
+            }.bind(this));
     },
     render: function() { return (
         <div id="source-add" className="tab-pane fade in">
@@ -558,16 +596,16 @@ var SourceForm = React.createClass({
                     <h3 className="panel-title">Add a source</h3>
                 </div>
                 <div className="panel-body">
-                    <form role="form">
+                    <form role="form" onSubmit={this.handleSubmit}>
                         <DjangoCSRF/>
-                        <InfiniteAuthorSelector authors={this.props.authors}/>
+                        <InfiniteAuthorSelector ref="authors" authors={this.props.authors}/>
                         <div className="form-group">
                             <label htmlFor="title">Title</label>
-                            <input type="text" name="title" className="form-control"/>
+                            <input type="text" name="title" ref="title" className="form-control"/>
                         </div>
                         <div className="form-group">
                             <label>Metadata</label>
-                            <InfiniteMetadata/>
+                            <InfiniteMetadata ref="metadata"/>
                         </div>
                         <button type="submit" className="btn btn-default">Save</button>
                     </form>
