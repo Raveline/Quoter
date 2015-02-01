@@ -24,19 +24,18 @@ var QuoterMenu = React.createClass({
         }.bind(this));
         this.state.tags = this.props.tags.slice();
     },
-    buildState: function() {
-        for (var i = 0; i < this.props.folders.lenght; i++) {
-        }
-    },
     addAuthor: function(author) {
         var authors = this.state.authors;
         authors = authors.concat(author);
         this.setState({authors: authors});
     },
-    addTag: function() {
+    addTag: function(tag) {
+        var tags = this.state.tags;
+        tags = tags.concat(tag)
+        this.setState({tags:tags});
     },
     addSource: function(source) {
-        var sources = this.state.sourcesj;
+        var sources = this.state.sources;
         sources.concat(source);
         this.setState({sources: sources});
     },
@@ -45,7 +44,7 @@ var QuoterMenu = React.createClass({
         <div className="tab-content">
             <FolderForm folders={this.props.folders}/>
             <FindForm tags = {this.state.tags} sources={this.state.sources} authors={this.state.authors} />
-            <QuoteForm/>
+            <QuoteForm authors={this.state.authors} sources={this.state.sources}/>
             <SourceForm authors={this.state.authors} sources={this.state.sources} addSource={this.addSource}/>
             <AuthorForm authors={this.state.authors} addAuthor={this.addAuthor}/>
         </div>
@@ -53,9 +52,26 @@ var QuoterMenu = React.createClass({
     }
 });
 
-var PrefilledSelector = React.createClass({
+var PrefilledMixin = {
     propTypes: {
         options: React.PropTypes.array.isRequired,
+    },
+    buildOptions: function() {
+        options = [];
+        for (var i = 0; i < this.props.options.length; i++) {
+            var option = this.props.options[i];
+            options.push(
+                <option key={i} value={option.value}>{option.display}</option>
+            );
+        }
+        return options;
+    }
+};
+
+var PrefilledSelector = React.createClass({
+    mixins: [PrefilledMixin],
+    propTypes: {
+        onChange: React.PropTypes.func
     },
     empty: function() {
         if (this.props.options.length > 0) {
@@ -80,16 +96,12 @@ var PrefilledSelector = React.createClass({
     handleChange: function() {
         var newValue = this.refs.selector.getDOMNode().value;
         this.setState({'selected':newValue});
+        this.callParameterChangeIfNeeded();
     },
-    buildOptions: function() {
-        options = [];
-        for (var i = 0; i < this.props.options.length; i++) {
-            var option = this.props.options[i];
-            options.push(
-                <option key={i} value={option.value}>{option.display}</option>
-            );
+    callParameterChangeIfNeeded: function() {
+        if (this.props.onChange) {
+            this.props.onChange();
         }
-        return options;
     },
     getValue: function() {
         return this.refs.selector.getDOMNode().value;
@@ -232,6 +244,15 @@ var AjaxPoster = {
           .fail(function() { });
     }
 }
+var AjaxGetter = {
+    get: function(url, callback) {
+        var jqxhr = $.get(url, function(response) {
+            if (response.result == 'success') {
+                callback(response.data);
+            }
+        });
+    }
+}
 
 var AddFolderForm = React.createClass({
     mixins: [AjaxPoster],
@@ -366,7 +387,87 @@ var FindForm = React.createClass({
     }
 });
 
+var PrefilledMultiSelect = React.createClass({
+    mixins:[PrefilledMixin],
+    getInitialState: function() { 
+        return { selected: [] }
+    },
+    propTypes: {
+        options: React.PropTypes.array.isRequired
+    },
+    getValues: function() {
+        return this.state.selected;
+    },
+    handleChange: function(e) {
+        var options = e.target.options;
+        var selection = [];
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+                selection.push(options[i].value);
+            }
+        }
+        this.setState({selected:selection});
+    },
+    render: function() { 
+        options = this.buildOptions();
+        return (
+        <div className="input-group">
+            <select ref='selector' value={this.state.selected} multiple={true} id="quote-add-author" className="form-control" name="author" onChange={this.handleChange}>
+                {options}
+            </select>
+            <span className="input-group-btn">
+                <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
+            </span>
+        </div>
+        );
+    }
+});
+
+var TagSelector = React.createClass({
+    propTypes: {
+        tags: React.PropTypes.array.isRequired
+    }
+    getInitialState: function() { 
+        return { selectedTags: [] }
+    },
+    autocomplete: function(e) {
+    },
+    render: function() { return (
+        <div className="form-group">
+            <label htmlFor="page">Tag</label>
+            <input id="quote-tag-autocomplete" onChange="{this.autocomplete}" type="text" name="quote-tag" className="form-control typeahead"/>
+        </div>
+        <div id="quote-tag-container">
+        </div>
+        );
+    }
+});
+
 var QuoteForm = React.createClass({
+    mixins: [AjaxPoster, AjaxGetter],
+    getInitialState: function() { return {
+            potentialAuthors: []
+        }
+    },
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var authors = this.refs.authors.getValues();
+        console.log(authors);
+    },
+    propTypes: {
+        sources: React.PropTypes.array.isRequired
+    },
+    updateAuthors: function() {
+        current_source = this.refs.source.getValue();
+        if (current_source) {
+            list_of_authors = this.get("/author/" + current_source + "/of", function(list_of_authors) {
+                this.setState({potentialAuthors: list_of_authors});
+            }.bind(this));
+        }
+    },
+    componentDidMount: function() {
+        this.updateAuthors();
+    },
     render: function() { return (
         <div id="quote-add" className="tab-pane fade in">
             <div className="panel panel-default">
@@ -374,13 +475,12 @@ var QuoteForm = React.createClass({
                     <h3 className="panel-title">Add a quote</h3>
                 </div>
                 <div className="panel-body">
-                    <form role="form">
+                    <form role="form" onSubmit={this.handleSubmit}>
                         <DjangoCSRF/>
                         <div className="form-group">
                             <label htmlFor="source">Source</label>
                             <div className="input-group">
-                                <select id="quote-add-source" className="form-control" name="source">
-                                </select>
+                                <PrefilledSelector ref="source" options={this.props.sources} onChange={this.updateAuthors}/>
                                 <span className="input-group-btn">
                                     <button className="btn btn-default" id="button-new-source" type="button">Add new</button>
                                 </span>
@@ -388,13 +488,7 @@ var QuoteForm = React.createClass({
                         </div>
                         <div className="form-group">
                             <label htmlFor="author">Author</label>
-                            <div className="input-group">
-                                <select multiple id="quote-add-author" className="form-control" name="author">
-                                </select>
-                                <span className="input-group-btn">
-                                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
-                                </span>
-                            </div>
+                                <PrefilledMultiSelect ref="authors" options={this.state.potentialAuthors}/>
                         </div>
                         <div className="form-group">
                             <label htmlFor="content">Quote</label>
@@ -403,14 +497,6 @@ var QuoteForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="page">Page / Localisation</label>
                             <input type="text" name="quote-page" className="form-control"/>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="page">Tag</label>
-                            <input id="quote-tag-autocomplete" type="text" name="quote-tag" className="form-control typeahead"/>
-                            <input type="hidden" value="" name="current-tag-value"/>
-                        </div>
-                        <div id="quote-tag-container">
-                            <input type="hidden" value="" name="quote-tags"/>
                         </div>
                         <div className="form-group">
                             <label htmlFor="comment">Comment</label>
@@ -539,7 +625,6 @@ var InfiniteMetadata = React.createClass({
         if (child_key === this.state.metadataNumber) {
             this.setState({metadataNumber : this.state.metadataNumber + 1});
         }
-        console.log(this.getValues());
     },
     getValues: function() {
         values = {};
