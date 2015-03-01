@@ -233,14 +233,20 @@ def read_tags(request, tags_string):
     If it's an integer : we already stored this tag. If it's a string, it's
     a new one and we have to record it."""
     tags = []
+    preparsed = tags_string.replace("'", "\"")
+    parsed = json.loads(preparsed)
+    identified = [p for p in parsed if p['value'] != 'new']
+    to_add = [p for p in parsed if p['value'] == 'new']
     folder_id = get_current_folder_id(request)
-    for tag in tags_string.split(","):
-        if tag.isdigit():
-            tags.append(Tag.objects.get(pk = int(tag)))
-        else:
-            t = Tag(name = tag, folder_id = folder_id)
-            t.save()
-            tags.append(t)
+
+    for t in to_add:
+        tag = Tag(name = t['display'], folder_id = folder_id)
+        tag.save()
+        tags.append(tag)
+    for t in identified:
+        if t['value'].isdigit():
+            tags.append(Tag.objects.get(pk = int(t['value'])))
+
     return tags
 
 def read_authors(authors_string):
