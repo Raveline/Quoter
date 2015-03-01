@@ -86,7 +86,7 @@ var PrefilledMixin = {
 var PrefilledSelector = React.createClass({
     mixins: [PrefilledMixin],
     propTypes: {
-        onChange: React.PropTypes.func
+        callback: React.PropTypes.func
     },
     empty: function() {
         if (this.props.options.length > 0) {
@@ -106,16 +106,17 @@ var PrefilledSelector = React.createClass({
             && newprops.options 
             && newprops.options.length > 0) {
             this.setState({'selected':newprops.options[0].value});
+            this.callParameterChangeIfNeeded(newprops.options[0].value);
         }
     },
     handleChange: function() {
-        var newValue = this.refs.selector.getDOMNode().value;
-        this.setState({'selected':newValue});
-        this.callParameterChangeIfNeeded();
+        var new_value = this.refs.selector.getDOMNode().value;
+        this.setState({'selected':new_value});
+        this.callParameterChangeIfNeeded(new_value);
     },
-    callParameterChangeIfNeeded: function() {
-        if (this.props.onChange) {
-            this.props.onChange();
+    callParameterChangeIfNeeded: function(new_value) {
+        if (this.props.callback) {
+            this.props.callback(new_value);
         }
     },
     getValue: function() {
@@ -681,10 +682,9 @@ var QuoteForm = React.createClass({
         this.refs.page.getDOMNode().value = '';
         this.refs.comment.getDOMNode().value = '';
     },
-    updateAuthors: function() {
-        current_source = this.refs.source.getValue();
-        if (current_source) {
-            list_of_authors = this.get("/author/" + current_source + "/of", function(list_of_authors) {
+    updateAuthors: function(source) {
+        if (source) {
+            list_of_authors = this.get("/author/" + source + "/of", function(list_of_authors) {
                 this.setState({potentialAuthors: list_of_authors});
             }.bind(this));
         }
@@ -704,7 +704,7 @@ var QuoteForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="source">Source</label>
                             <div className="input-group">
-                                <PrefilledSelector ref="source" options={this.props.sources} onChange={this.updateAuthors}/>
+                                <PrefilledSelector ref="source" options={this.props.sources} callback={this.updateAuthors}/>
                                 <span className="input-group-btn">
                                     <button className="btn btn-default" id="button-new-source" type="button">Add new</button>
                                 </span>
