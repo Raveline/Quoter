@@ -3,6 +3,21 @@ buildQuoter = function(folders_array, tags_array) {
     React.render(<QuoterAccess/>, document.getElementById('main-menu-container'));
 }
 
+var AddNewButton = React.createClass({
+    propTypes: {
+        switcher: React.PropTypes.func.isRequired,
+        toPanel: React.PropTypes.number.isRequired
+    },
+    handleClick: function() {
+        this.props.switcher(this.props.toPanel);
+    },
+    render: function() {
+        return (
+            <button onClick={this.handleClick} className="btn btn-default" type="button">Add new</button>
+        )
+    }
+});
+
 var QuoterMenu = React.createClass({
     propTypes: {
         folders: React.PropTypes.array.isRequired,
@@ -175,19 +190,16 @@ var TabbedArea = React.createClass({
                   activeTab: React.PropTypes.number.isRequired,
                   switchTab: React.PropTypes.func.isRequired
     },
-
     handleClick: function(idx, e) {
         e.preventDefault();
         this.props.switchTab(idx);
     },
-
     render: function() {
         return this.transferPropsTo(
                 <ul className="nav nav-tabs nav-pills nav-stacked">
                     {this.renderTabs()}
                 </ul>);
     },
-
     renderTabs: function() {
         return this.props.paneModels.map(function(tabName, idx) {
             return (
@@ -205,7 +217,6 @@ var Tab = React.createClass({
         isActive: React.PropTypes.bool.isRequired,
         onClick: React.PropTypes.func.isRequired
     },
-
     render: function() {
         var className = React.addons.classSet({active: this.props.isActive})
         return (
