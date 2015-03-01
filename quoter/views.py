@@ -167,7 +167,7 @@ def findByWord(request, word):
         , folder_id = folder_id))
 
 @login_required
-def findByAuthor(request, author):
+def findByAuthor(request, author_id):
     folder_id = get_current_folder_id(request)
     return json_quotes(Quote.objects.filter(authority__id__contains =
                         author_id, folder_id = folder_id))
