@@ -85,7 +85,7 @@ def addSource(request):
                 source.save()
                 source.authors = authors
                 source.metadatas = metadata
-                return json_success("Added : " + str(source))
+                return json_creation_success(source)
             except Exception as e:
                 return json_error(str(e))
         else:
@@ -351,10 +351,10 @@ def json_quotes(quotes):
 def json_creation_success(obj):
     '''Create a JSON response to inform the client an object
     has been successfuly created.
-    
-    The JSON message will contains 'success' for the result field, and the 
+
+    The JSON message will contains 'success' for the result field, and the
     necessary information on the created object in the newObject field.
-    
+
     The parameter must be a Django model object, so that we can make
     a string out of it, and we can have give its primary key.'''
     response = {}
