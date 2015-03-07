@@ -733,6 +733,10 @@ var QuoteForm = React.createClass({
     handleSubmit: function(e) {
         e.preventDefault();
         var authors = this.refs.authors.getValues();
+        if (authors.length == 0) {
+            alert('You must pick at least one author !');
+            return;
+        }
         var source = this.refs.source.getValue();
         var tags = this.refs.tags.getValues();
         var quote = this.refs.quote.getDOMNode().value;
