@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from models import Author, Source, Quote, SourceMetadata, SourceInfos, Tag, Folder
+from quoter.models import Author, Source, Quote, SourceMetadata, SourceInfos, Tag, Folder
 from django.utils.safestring import mark_safe
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, get_user, login, logout
@@ -37,12 +37,12 @@ def printHome(request, message):
     """Shortcut for printing the login page."""
     return render(request, 'quoter/login.html', { 'message' : message })
 
-
 def userHome(request):
     """Display the main page. Quoter being a browser-app, almost everything
     is displayed in one page. However, if we do not have a connected user, we will
     have to redirect to a login and database selection page."""
     context = { 'folders' : get_folders_for(request)
+            , 'tags' : json_string_for_tags(request)
             , 'current_folder_name' : get_current_folder_name(request) }
     return render(request, 'quoter/quoter.html', context)
 
@@ -66,7 +66,7 @@ def addAuthor(request):
                             ,surname = request.POST["surname"]
                             ,folder_id = folder_id)
             new_author.save()
-            return json_success("Added : " + str(new_author))
+            return json_creation_success(new_author)
         else:
             return json_error('Missing fields.')
     else:
@@ -75,16 +75,19 @@ def addAuthor(request):
 @login_required
 def addSource(request):
     if request.method == 'POST':
-        if mustHaveFields(["authors", "title", "metadatas"], request.POST):
-            authors = read_authors(request.POST["authors"])
-            title = request.POST["title"]
-            metadatas = read_metadatas(request.POST["metadatas"])
-            folder_id = get_current_folder_id(request)
-            source = Source(title = title, folder_id = folder_id)
-            source.save()
-            source.authors = authors
-            source.metadatas = metadatas
-            return json_success("Added : " + str(source))
+        if mustHaveFields(["authors", "title", "metadata"], request.POST):
+            try:
+                authors = read_authors(request.POST["authors"])
+                title = request.POST["title"]
+                metadata = read_metadatas(request.POST["metadata"])
+                folder_id = get_current_folder_id(request)
+                source = Source(title = title, folder_id = folder_id)
+                source.save()
+                source.authors = authors
+                source.metadatas = metadata
+                return json_creation_success(source)
+            except Exception as e:
+                return json_error(str(e))
         else:
             return json_error('Missing fields.')
     else:
@@ -164,7 +167,7 @@ def findByWord(request, word):
         , folder_id = folder_id))
 
 @login_required
-def findByAuthor(request, author):
+def findByAuthor(request, author_id):
     folder_id = get_current_folder_id(request)
     return json_quotes(Quote.objects.filter(authority__id__contains =
                         author_id, folder_id = folder_id))
@@ -230,14 +233,20 @@ def read_tags(request, tags_string):
     If it's an integer : we already stored this tag. If it's a string, it's
     a new one and we have to record it."""
     tags = []
+    preparsed = tags_string.replace("'", "\"")
+    parsed = json.loads(preparsed)
+    identified = [p for p in parsed if p['value'] != 'new']
+    to_add = [p for p in parsed if p['value'] == 'new']
     folder_id = get_current_folder_id(request)
-    for tag in tags_string.split(","):
-        if tag.isdigit():
-            tags.append(Tag.objects.get(pk = int(tag)))
-        else:
-            t = Tag(name = tag, folder_id = folder_id)
-            t.save()
-            tags.append(t)
+
+    for t in to_add:
+        tag = Tag(name = t['display'], folder_id = folder_id)
+        tag.save()
+        tags.append(tag)
+    for t in identified:
+        if t['value'].isdigit():
+            tags.append(Tag.objects.get(pk = int(t['value'])))
+
     return tags
 
 def read_authors(authors_string):
@@ -264,8 +273,8 @@ def read_metadatas(metadatas_string):
 
 def transform_metadatas_to_dict(metadatas_string):
     if len(metadatas_string) > 0:
-        return dict(item.split("###")
-                    for item in metadatas_string.split("@@@"))
+        preparsed = metadatas_string.replace("'", "\"")
+        return json.loads(preparsed)
     else:
         return {}
 
@@ -297,7 +306,11 @@ def set_folder_to(request, folder):
 
 def get_folders_for(request):
     user = get_user(request)
-    return Folder.objects.filter(user = user)
+    result = []
+    folders = Folder.objects.filter(user = user)
+    for f in folders:
+        result.append({'display':f.name, 'value':str(f.pk) })
+    return mark_safe(json.dumps(result))
 
 def get_current_folder_id(request):
     return request.session['folder']
@@ -309,7 +322,7 @@ def get_current_folder_name(request):
 def jsonify_object_array(object_array):
     all_objects = []
     for item in object_array:
-        all_objects.append({'pk' : item.pk, 'display' : str(item) })
+        all_objects.append({'value' : item.pk, 'display' : str(item) })
     return all_objects
 
 def jsonify_quote_array(quote_array):
@@ -320,10 +333,11 @@ def jsonify_quote_array(quote_array):
                     'page': quote.page})
     return all_quotes
 
-def json_string_for_tags():
+def json_string_for_tags(request):
     """Return every existing tag in a nice, json-like string, so that
     our javascript is able to handle it."""
-    tags = Tag.objects.all()
+    folder_id = get_current_folder_id(request)
+    tags = Tag.objects.filter(folder_id = folder_id)
     result = []
     for tag in tags:
         result.append({'display':tag.name, 'value':str(tag.pk) })
@@ -332,6 +346,20 @@ def json_string_for_tags():
 def json_quotes(quotes):
     response = { 'result' : 'success',
                 'data' : jsonify_quote_array(quotes) }
+    return json_response(response)
+
+def json_creation_success(obj):
+    '''Create a JSON response to inform the client an object
+    has been successfuly created.
+
+    The JSON message will contains 'success' for the result field, and the
+    necessary information on the created object in the newObject field.
+
+    The parameter must be a Django model object, so that we can make
+    a string out of it, and we can have give its primary key.'''
+    response = {}
+    response['result'] = 'success'
+    response['newObject'] = { 'display': str(obj), 'value' : obj.pk }
     return json_response(response)
 
 def json_success(msg):

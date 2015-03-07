@@ -33,6 +33,9 @@ class Source(models.Model):
     metadatas = models.ManyToManyField(SourceInfos)
     folder = models.ForeignKey(Folder)
 
+    def __str__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
         author = self.main_author()
         if self.authors.count() > 1:

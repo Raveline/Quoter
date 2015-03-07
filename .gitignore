@@ -2,3 +2,6 @@ fabfile.py
 *.pyc
 *.swp
 *.sqlite3
+build/
+bower*/
+*.log
