@@ -510,7 +510,12 @@ var PrefilledMultiSelect = React.createClass({
 var SingleTag = React.createClass({
     propTypes: {
         name: React.PropTypes.string.isRequired,
-        isNew: React.PropTypes.bool.isRequired
+        isNew: React.PropTypes.bool.isRequired,
+        removeFunc: React.PropTypes.func.isRequired
+    },
+    remove: function(e) {
+        e.preventDefault();
+        this.props.removeFunc(this.props.name);
     },
     render: function() { 
         var label_class = "label label-default";
@@ -520,7 +525,7 @@ var SingleTag = React.createClass({
         return (
             <span className={label_class}>
                 {this.props.name}
-                <a href="#" className="tag-remover"/>
+                <a href="#" className="tag-remover" onClick={this.remove}>X</a>
             </span>
         )
     }
@@ -541,6 +546,14 @@ var TagSelector = React.createClass({
     appendTag: function(display, value) {
         var newTags = this.state.selectedTags.concat({display:display, value:value});
         this.setState({selectedTags : newTags});
+    },
+    removeTag: function(tag_display) {
+        var tags = this.state.selectedTags;
+        var searched = tags.filter(function(x) { x.display == tag_display });
+        to_remove = searched[0];
+        var idx_to_remove = tags.indexOf(to_remove);
+        tags.splice(idx_to_remove, 1);
+        this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
         if (e.key === 'ArrowDown') {
@@ -589,11 +602,11 @@ var TagSelector = React.createClass({
         for (var i = 0; i < this.state.selectedTags.length; i++) {
             if (this.state.selectedTags[i].value) {
                 toReturn.push(
-                    <div className="label-default">{this.state.selectedTags[i].display}</div>
+                    <SingleTag removeFunc={this.removeTag} name={this.state.selectedTags[i].display} isNew={false}/>
                 );
             } else {
                 toReturn.push(
-                    <div className="label-warning">{this.state.selectedTags[i].display}</div>
+                    <SingleTag removeFunc={this.removeTag} name={this.state.selectedTags[i].display} isNew={false}/>
                 );
             }
         }
