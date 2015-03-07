@@ -51,7 +51,7 @@ var QuoterMenu = React.createClass({
     },
     addSource: function(source) {
         var sources = this.state.sources;
-        sources.concat(source);
+        sources = sources.concat(source);
         this.setState({sources: sources});
     },
     render: function() { 
