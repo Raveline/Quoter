@@ -744,8 +744,6 @@ var QuoteForm = React.createClass({
         this.empty();
     },
     empty: function() {
-        this.refs.authors.empty();
-        this.refs.source.empty();
         this.refs.tags.empty();
         this.refs.quote.getDOMNode().value = '';
         this.refs.page.getDOMNode().value = '';
