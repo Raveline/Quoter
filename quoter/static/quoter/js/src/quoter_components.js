@@ -562,9 +562,10 @@ var TagSelector = React.createClass({
         if (e.key == 'ArrowUp') {
             this.refs.autocompleter.up();
         }
-        if (e.key === 'Enter' || e.key === 'Tab') {
+        var selected = this.refs.autocompleter.getSelected()
+        var autocomplete_has_selected = selected || false
+        if (e.key === 'Enter' || (e.key === 'Tab' && autocomplete_has_selected)) {
             e.preventDefault();
-            var selected = this.refs.autocompleter.getSelected()
             if (selected) {
                 this.setState({'currentTagInput':{display:selected.display, value:selected.value}});
                 this.appendTag(selected.display, selected.value);
