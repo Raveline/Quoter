@@ -290,7 +290,7 @@ var AddFolderForm = React.createClass({
             return;
         }
         this.refs.new_folder_name.getDOMNode().value = '';
-        this.post("/folder/add", {'new-folder-name' : new_folder_name }, function() { console.log('DONE !') });
+        this.post("/folder/add", {'new-folder-name' : new_folder_name }, function() { });
     }
 })
 
@@ -517,7 +517,6 @@ var SingleTag = React.createClass({
         if (!this.tag_id) {
             label_class= "label label-warning";
         }
-        console.log(this.props.name);
         return (
             <span className={label_class}>
                 {this.props.name}
@@ -554,7 +553,6 @@ var TagSelector = React.createClass({
             e.preventDefault();
             var selected = this.refs.autocompleter.getSelected()
             if (selected) {
-                console.log(selected.display);
                 this.setState({'currentTagInput':{display:selected.display, value:selected.value}});
                 this.appendTag(selected.display, selected.value);
             } else {
@@ -734,7 +732,6 @@ var QuoteForm = React.createClass({
                          'page' : page,
                          'tags' : JSON.stringify(tags),
                          'comment' : comment }
-        console.log(JSON.stringify(quote_obj));
         this.post('quote/new', quote_obj, function() {
             var new_tags = tags.filter(function(x) { return x.key == 'new' });
             for (var i = 0; i < new_tags.length; i++) {
@@ -913,7 +910,6 @@ var InfiniteMetadata = React.createClass({
         this.setState({metadataNumber:1});
     },
     onChildBlur: function(child_key) {
-        console.log(child_key);
         if (child_key === this.state.metadataNumber) {
             this.setState({metadataNumber : this.state.metadataNumber + 1});
         }
