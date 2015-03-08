@@ -322,7 +322,7 @@ def get_current_folder_name(request):
 def jsonify_object_array(object_array):
     all_objects = []
     for item in object_array:
-        all_objects.append({'value' : item.pk, 'display' : str(item) })
+        all_objects.append({'value' : item.pk, 'display' : unicode(item) })
     return all_objects
 
 def jsonify_quote_array(quote_array):
