@@ -45,7 +45,7 @@ class Source(models.Model):
     def main_author(self):
         num_author = self.authors.count()
         if (num_author > 0):
-            return str(self.authors.all()[0])
+            return unicode(self.authors.all()[0])
         else:
             return "Anonymous"
 
