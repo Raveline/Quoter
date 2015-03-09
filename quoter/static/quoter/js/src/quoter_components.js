@@ -434,7 +434,7 @@ var FindForm = React.createClass({
                         {data[i].content}
                     </div>
                     <div className="panel-footer">
-                        {data[i].source}
+                        {data[i].source} - {data[i].page}
                     </div>
                 </div>
             );
