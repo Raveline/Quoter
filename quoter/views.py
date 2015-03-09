@@ -113,7 +113,7 @@ def addQuote(request):
             quote.save()
             quote.authority = authors
             quote.tags = tags
-            return json_success("Added : " + unicode(source))
+            return json_success("Added : " + str(source))
         else:
             return json_error('Missing fields.')
     else:
@@ -322,14 +322,15 @@ def get_current_folder_name(request):
 def jsonify_object_array(object_array):
     all_objects = []
     for item in object_array:
-        all_objects.append({'value' : item.pk, 'display' : unicode(item) })
+        print("Trying object : " + str(item))
+        all_objects.append({'value' : item.pk, 'display' : str(item) })
     return all_objects
 
 def jsonify_quote_array(quote_array):
     all_quotes = []
     for quote in quote_array:
         all_quotes.append({'content': quote.content,
-                    'source' : unicode(quote.source),
+                    'source' : str(quote.source),
                     'page': quote.page})
     return all_quotes
 
@@ -359,7 +360,7 @@ def json_creation_success(obj):
     a string out of it, and we can have give its primary key.'''
     response = {}
     response['result'] = 'success'
-    response['newObject'] = { 'display': unicode(obj), 'value' : obj.pk }
+    response['newObject'] = { 'display': str(obj), 'value' : obj.pk }
     return json_response(response)
 
 def json_success(msg):
