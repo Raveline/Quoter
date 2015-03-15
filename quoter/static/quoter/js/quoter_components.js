@@ -1,3 +1,13 @@
+function removeFromIfExist(array, matcher) {
+    var searched = array.filter(matcher);
+    if (searched.length > 0) {
+        to_remove = searched[0];
+        var idx_to_remove = array.indexOf(to_remove);
+        array.splice(idx_to_remove, 1);
+    }
+    return array;
+}
+
 buildQuoter = function(folders_array, tags_array) {
     React.render(React.createElement(QuoterMenu, {folders: folders_array, tags: tags_array}), document.getElementById('quoterForms'));
     React.render(React.createElement(QuoterAccess, null), document.getElementById('main-menu-container'));
@@ -41,6 +51,7 @@ var QuoterMenu = React.createClass({displayName: "QuoterMenu",
     },
     addAuthor: function(author) {
         var authors = this.state.authors;
+        removeFromIfExist(authors, function(x) { return x.value == author.value });
         authors = authors.concat(author);
         this.setState({authors: authors});
     },
@@ -271,9 +282,9 @@ var Editable = {
         this.setState({inEditMode: true, currentId: to_modify});
         this.get(this.props.url_get + to_modify, this.load);
     },
-    sendUpdate: function(new_data) {
+    sendUpdate: function(new_data, callback) {
         this.setState({inEditMode: false, currentId: 0});
-        this.post(this.props.url_modify + this.state.currentId, new_data);
+        this.post(this.props.url_modify + this.state.currentId, new_data, callback);
     },
     renderEdit: function() {
         return (
@@ -593,11 +604,7 @@ var TagSelector = React.createClass({displayName: "TagSelector",
         this.setState({selectedTags : newTags});
     },
     removeTag: function(tag_display) {
-        var tags = this.state.selectedTags;
-        var searched = tags.filter(function(x) { x.display == tag_display });
-        to_remove = searched[0];
-        var idx_to_remove = tags.indexOf(to_remove);
-        tags.splice(idx_to_remove, 1);
+        var tags = removeFromIfExist(this.state.selectedTag, function(x) { x.display == tag_display });
         this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
@@ -1080,12 +1087,13 @@ var AuthorForm = React.createClass({displayName: "AuthorForm",
                           'last_name' : last_name,
                           'surname' : surname }
         // Call adder...
+        var adder = function(info) {
+            this.props.addAuthor(info.newObject);
+        }.bind(this);
         if (this.state.inEditMode) {
-            this.sendUpdate(newAuthor);
+            this.sendUpdate(newAuthor, adder);
         } else {
-            this.post('author/new', newAuthor, function(info) {
-                    this.props.addAuthor(info.newObject);
-                }.bind(this));
+            this.post('author/new', newAuthor, adder);
         }
     },
     render: function() { 
