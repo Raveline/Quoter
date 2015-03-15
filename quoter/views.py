@@ -149,9 +149,18 @@ def getAuthorsOf(request, source_id):
 
 @login_required
 def getSources(request):
-    sources =Source.objects.filter(folder_id = get_current_folder_id(request))
+    sources = Source.objects.filter(folder_id = get_current_folder_id(request))
     response = { 'result':'sucess',
                 'data':jsonify_object_array(sources) }
+    return json_response(response)
+
+@login_required
+def loadAuthor(request, author_id):
+    author = Author.objects.get(folder_id = get_current_folder_id(request),
+                                pk = author_id)
+    response = {'result': 'success', 'data': {'first_name': author.first_name,
+                                              'last_name': author.last_name,
+                                              'surname': author.surname}}
     return json_response(response)
 
 @login_required
@@ -322,7 +331,6 @@ def get_current_folder_name(request):
 def jsonify_object_array(object_array):
     all_objects = []
     for item in object_array:
-        print("Trying object : " + str(item))
         all_objects.append({'value' : item.pk, 'display' : str(item) })
     return all_objects
 
