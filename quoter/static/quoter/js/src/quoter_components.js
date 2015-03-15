@@ -61,7 +61,8 @@ var QuoterMenu = React.createClass({
             <FindForm tags = {this.state.tags} sources={this.state.sources} authors={this.state.authors} />
             <QuoteForm authors={this.state.authors} sources={this.state.sources} tags={this.state.tags} addTag={this.addTag}/>
             <SourceForm authors={this.state.authors} sources={this.state.sources} addSource={this.addSource}/>
-            <AuthorForm authors={this.state.authors} addAuthor={this.addAuthor}/>
+            <AuthorForm authors={this.state.authors} addAuthor={this.addAuthor} 
+                        modifiables={this.state.authors} url_get="/author/load/" url_modify="/author/update/"/>
         </div>
     );
     }
@@ -243,6 +244,44 @@ var QuoterNav = React.createClass({
     );
     }
 });
+
+var Editable = {
+    /**
+     * Editable enable an edit mode for forms. At the end of the form will be added
+     * a combobox with all known data for the type edited by the form.
+     * Selecting an item out of the combobox will load the object in the form,
+     * so the user can modify the object.
+     * Class using Editable must implement a load(object) function, to get the object
+     * inforlation. They also should test for the inEditMode state flag, to know if
+     * they must Create or Edit an object. 
+     *
+     * Note: this mixin requires both AjaxGetter and AjaxPoster.
+     *
+     * **/
+    propTypes: {
+        modifiables: React.PropTypes.array,
+        url_get: React.PropTypes.string.isRequired,
+        url_modify: React.PropTypes.string.isRequired
+    },
+    getInitialState: function() { return { inEditMode: false } },
+    getObjectAndLoad: function(e) {
+        e.preventDefault();
+        var to_modify = this.refs.to_modify.getValue();
+        this.get(this.props.url_get + to_modify, this.load);
+    },
+    renderEdit: function() {
+        return (
+                <div className="input-group">
+                    <PrefilledSelector ref="to_modify" options={this.props.modifiables}/>
+                    <span className="input-group-btn">
+                        <button onClick={this.getObjectAndLoad} className="btn btn-default" type="button">
+                            Modify
+                        </button>
+                    </span>
+                </div>
+            );
+    }
+}
 
 var AjaxPoster = {
     post: function(url, data, callback) {
@@ -1008,10 +1047,15 @@ var SourceForm = React.createClass({
 });
 
 var AuthorForm = React.createClass({
-    mixins: [AjaxPoster],
+    mixins: [AjaxPoster, AjaxGetter, Editable],
     propTypes: {
         addAuthor: React.PropTypes.func.isRequired,
         authors: React.PropTypes.array.isRequired
+    },
+    load: function(data) {
+        this.refs.author_first_name.getDOMNode().value = data.first_name;
+        this.refs.author_last_name.getDOMNode().value = data.last_name;
+        this.refs.author_surname.getDOMNode().value = data.surname;
     },
     handleSubmit: function(e) {
         e.preventDefault();
@@ -1033,7 +1077,9 @@ var AuthorForm = React.createClass({
                 this.props.addAuthor(info.newObject);
             }.bind(this));
     },
-    render: function() { return (
+    render: function() { 
+        var editForm = this.renderEdit()
+        return (
         <div id="author-add" className="tab-pane fade in">
             <div className="panel panel-default">
                 <div className="panel-heading">
@@ -1058,6 +1104,15 @@ var AuthorForm = React.createClass({
                     </form>
                 </div>
             </div>
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">... or pick an author to modify</h3>
+                </div>
+                <div className="panel-body">
+                    {editForm}
+                </div>
+            </div>
+
         </div>
     );
     }
