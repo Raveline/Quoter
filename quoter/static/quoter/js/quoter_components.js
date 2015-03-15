@@ -263,11 +263,17 @@ var Editable = {
         url_get: React.PropTypes.string.isRequired,
         url_modify: React.PropTypes.string.isRequired
     },
-    getInitialState: function() { return { inEditMode: false } },
+    getInitialState: function() { return { inEditMode: false, currentId: 0 } },
     getObjectAndLoad: function(e) {
         e.preventDefault();
         var to_modify = this.refs.to_modify.getValue();
+
+        this.setState({inEditMode: true, currentId: to_modify});
         this.get(this.props.url_get + to_modify, this.load);
+    },
+    sendUpdate: function(new_data) {
+        this.setState({inEditMode: false, currentId: 0});
+        this.post(this.props.url_modify + this.state.currentId, new_data);
     },
     renderEdit: function() {
         return (
@@ -1053,6 +1059,7 @@ var AuthorForm = React.createClass({displayName: "AuthorForm",
         authors: React.PropTypes.array.isRequired
     },
     load: function(data) {
+        console.log('HERE !');
         this.refs.author_first_name.getDOMNode().value = data.first_name;
         this.refs.author_last_name.getDOMNode().value = data.last_name;
         this.refs.author_surname.getDOMNode().value = data.surname;
@@ -1073,9 +1080,13 @@ var AuthorForm = React.createClass({displayName: "AuthorForm",
                           'last_name' : last_name,
                           'surname' : surname }
         // Call adder...
-        this.post('author/new', newAuthor, function(info) {
-                this.props.addAuthor(info.newObject);
-            }.bind(this));
+        if (this.state.inEditMode) {
+            this.sendUpdate(newAuthor);
+        } else {
+            this.post('author/new', newAuthor, function(info) {
+                    this.props.addAuthor(info.newObject);
+                }.bind(this));
+        }
     },
     render: function() { 
         var editForm = this.renderEdit()
