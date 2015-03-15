@@ -127,7 +127,13 @@ def poll_for_tags(request, tags):
 
 @login_required
 def updateAuthor(request, author_id):
-    pass
+    to_modify = Author.objects.get(pk = author_id,
+                                   folder_id = get_current_folder_id(request))
+    to_modify.first_name = request.POST["first_name"]
+    to_modify.last_name = request.POST["last_name"]
+    to_modify.surname = request.POST["surname"]
+    to_modify.save()
+    return json_creation_success(to_modify)
 
 @login_required
 def updateSource(request, source_id):
