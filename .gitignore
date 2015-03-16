@@ -5,3 +5,4 @@ fabfile.py
 build/
 bower*/
 *.log
+*.module-cache/
