@@ -20,12 +20,21 @@ class Author(models.Model):
         else:
             return self.first_name + " " + self.last_name
 
+    def to_dict(self):
+        return {'first_name': self.first_name,
+                'last_name': self.last_name,
+                'surname': self.surname}
+
 class SourceMetadata(models.Model):
     name = models.CharField(max_length=64)
 
 class SourceInfos(models.Model):
     metadata = models.ForeignKey(SourceMetadata)
     value = models.CharField(max_length=64, blank=True)
+
+    def to_dict(self):
+        return {'metadata': self.metadata.name,
+                'value': self.value}
 
 class Source(models.Model):
     title = models.CharField(max_length=128)
@@ -48,6 +57,12 @@ class Source(models.Model):
             return str(self.authors.all()[0])
         else:
             return "Anonymous"
+
+    def to_dict(self):
+        return {'title': self.title,
+                'authors': [auth.pk for auth in self.authors],
+                'metadatas': [si.to_dict for si in self.metadatas]}
+
 
 class Tag(models.Model):
     name= models.CharField(max_length=64)

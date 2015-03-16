@@ -178,9 +178,15 @@ def getSources(request):
 def loadAuthor(request, author_id):
     author = Author.objects.get(folder_id=get_current_folder_id(request),
                                 pk=author_id)
-    response = {'result': 'success', 'data': {'first_name': author.first_name,
-                                              'last_name': author.last_name,
-                                              'surname': author.surname}}
+    response = {'result': 'success', 'data': author.to_dict()}
+    return json_response(response)
+
+
+@login_required
+def loadSource(request, source_id):
+    source = Source.objects.get(folder_id=get_current_folder_id(request),
+                                pk=source_id)
+    response = {'result': 'success', 'data': source.to_dict()}
     return json_response(response)
 
 
