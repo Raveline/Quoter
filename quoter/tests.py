@@ -1,5 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from quoter.views import addSource
 from quoter.models import Author, Source, SourceMetadata, SourceInfos, Folder
 
 
@@ -15,61 +17,72 @@ class QuoterTests(TestCase):
 class AuthorTest(QuoterTests):
     def setUp(self):
         super(AuthorTest, self).setUp()
-        Author.objects.create(first_name="", last_name="", surname="Homer",
-                              folder=self.folder)
-        Author.objects.create(first_name="Henry", last_name="James", surname="",
-                              folder=self.folder)
+        self.homer = Author.objects.create(
+            surname="Homer", folder=self.folder
+        )
+        self.james = Author.objects.create(
+            first_name="Henry", last_name="James", folder=self.folder
+        )
 
     def test_authors_display(self):
-        homer = Author.objects.get(surname="Homer")
-        henry_james = Author.objects.get(first_name="Henry", last_name="James")
-        self.assertEqual(str(homer), "Homer")
-        self.assertEqual(str(henry_james), "Henry James")
+        self.assertEqual(str(self.homer), "Homer")
+        self.assertEqual(str(self.james), "Henry James")
 
-    def test_can_retrieve_pk(self):
-        homer = Author.objects.get(surname="Homer")
-        self.assertTrue(homer.pk > 0)
+    def test_to_dict(self):
+        self.assertEqual(self.homer.to_dict(), {'first_name': '',
+                                                'last_name': '',
+                                                'surname': 'Homer'})
+        self.assertEqual(self.james.to_dict(), {'first_name': 'Henry',
+                                                'last_name': 'James',
+                                                'surname': ''})
 
 
 class TestSource(QuoterTests):
     def setUp(self):
         super(TestSource, self).setUp()
-        Source.objects.create(title="Odyssey", folder=self.folder)
+        self.odyssey = Source.objects.create(title="Odyssey",
+                                             folder=self.folder)
+
+    def test_to_dict(self):
+        homer = Author(surname="Homer", folder=self.folder)
+        homer.save()
+        metaTrad = SourceMetadata(name="Traductor")
+        metaTrad.save()
+        metaInfo = SourceInfos(metadata=metaTrad, value="Thomas Hobbes")
+        metaInfo.save()
+        self.odyssey.authors.add(homer)
+        self.odyssey.metadatas.add(metaInfo)
+        self.assertEqual(self.odyssey.to_dict(),
+                         {'title': 'Odyssey', 'authors': [homer.pk],
+                          'metadatas': [{metaTrad.name: metaInfo.value}]})
 
     def test_attach_author_to_source(self):
         """Attaching one author to the source works."""
-        odyssey = Source.objects.get(title="Odyssey")
-        homer = Author(first_name="", last_name="", surname="Homer",
-                       folder=self.folder)
+        homer = Author(surname="Homer", folder=self.folder)
         homer.save()
-        odyssey.authors.add(homer)
-        self.assertEqual(str(odyssey), "Odyssey (HOMER)")
-        self.assertEqual(odyssey.authors.count(), 1)
+        self.odyssey.authors.add(homer)
+        self.assertEqual(str(self.odyssey), "Odyssey (HOMER)")
+        self.assertEqual(self.odyssey.authors.count(), 1)
 
     def test_attach_authors_to_source(self):
         """Attaching many authors is recognized."""
-        odyssey = Source.objects.get(title="Odyssey")
-        homer = Author(first_name="", last_name="", surname="Homer",
-                       folder=self.folder)
-        virgil = Author(first_name="", last_name="", surname="Virgil",
-                        folder=self.folder)
+        homer = Author(surname="Homer", folder=self.folder)
+        virgil = Author(surname="Virgil", folder=self.folder)
         homer.save()
         virgil.save()
-        odyssey.authors.add(homer, virgil)
-        self.assertEqual(str(odyssey), "Odyssey (HOMER ET AL.)")
-        self.assertEqual(odyssey.authors.count(), 2)
+        self.odyssey.authors.add(homer, virgil)
+        self.assertEqual(str(self.odyssey), "Odyssey (HOMER ET AL.)")
+        self.assertEqual(self.odyssey.authors.count(), 2)
 
     def test_detach_author_from_source(self):
         """Removing an author from a source doesn't delete the author from the
         database."""
-        odyssey = Source.objects.get(title="Odyssey")
-        homer = Author(first_name="", last_name="", surname="Homer",
-                       folder=self.folder)
+        homer = Author(surname="Homer", folder=self.folder)
         homer.save()
-        odyssey.authors.add(homer)
-        odyssey.authors.remove(homer)
-        self.assertEqual(str(odyssey), "Odyssey (ANONYMOUS)")
-        self.assertEqual(odyssey.authors.count(), 0)
+        self.odyssey.authors.add(homer)
+        self.odyssey.authors.remove(homer)
+        self.assertEqual(str(self.odyssey), "Odyssey (ANONYMOUS)")
+        self.assertEqual(self.odyssey.authors.count(), 0)
         reHomer = Author.objects.get(surname="Homer")
         self.assertEqual(reHomer, homer)
 
@@ -78,9 +91,8 @@ class TestSource(QuoterTests):
         metaTrad.save()
         metaInfo = SourceInfos(metadata=metaTrad, value="Thomas Hobbes")
         metaInfo.save()
-        odyssey = Source.objects.get(title="Odyssey")
-        odyssey.metadatas.add(metaInfo)
-        self.assertEqual(odyssey.metadatas.count(), 1)
+        self.odyssey.metadatas.add(metaInfo)
+        self.assertEqual(self.odyssey.metadatas.count(), 1)
 
     def test_add_source(self):
         henryTest = Author(first_name="Henry", last_name="Test", surname="",
@@ -88,7 +100,7 @@ class TestSource(QuoterTests):
         henryTest.save()
         logsuc = self.client.login(username='test', password='test')
         self.assertTrue(logsuc)
-        response = self.client.post('/source/new/',
+        response = self.client.post(reverse(addSource),
                                     {'title': 'A test source',
                                      'authors': henryTest.pk,
                                      'metadatas': '{"Editeur": "Flammarion", "Collection": "collec"}'})
@@ -103,11 +115,11 @@ class TestSource(QuoterTests):
         # Metadata entered with initial lowercase ("editeur")
         # should be recognized as the uppercase initial ("Editeur")
         self.client.login(username='test', password='test')
-        response = self.client.post('/source/new/',
+        response = self.client.post(reverse(addSource),
                                     {'title': 'A test source',
                                      'authors': henryTest.pk,
                                      'metadatas': '{"editeur":"Flammarion", "Collection":"collec"}'
-                           })
+                                     })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(SourceMetadata.objects.filter(
             name__icontains="editeur"

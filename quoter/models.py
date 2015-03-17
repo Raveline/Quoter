@@ -33,8 +33,7 @@ class SourceInfos(models.Model):
     value = models.CharField(max_length=64, blank=True)
 
     def to_dict(self):
-        return {'metadata': self.metadata.name,
-                'value': self.value}
+        return {self.metadata.name: self.value}
 
 class Source(models.Model):
     title = models.CharField(max_length=128)
@@ -60,8 +59,8 @@ class Source(models.Model):
 
     def to_dict(self):
         return {'title': self.title,
-                'authors': [auth.pk for auth in self.authors],
-                'metadatas': [si.to_dict for si in self.metadatas]}
+                'authors': [auth.pk for auth in self.authors.all()],
+                'metadatas': [si.to_dict() for si in self.metadatas.all()]}
 
 
 class Tag(models.Model):
