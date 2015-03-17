@@ -1,3 +1,13 @@
+function removeFromIfExist(array, matcher) {
+    var searched = array.filter(matcher);
+    if (searched.length > 0) {
+        to_remove = searched[0];
+        var idx_to_remove = array.indexOf(to_remove);
+        array.splice(idx_to_remove, 1);
+    }
+    return array;
+}
+
 buildQuoter = function(folders_array, tags_array) {
     React.render(<QuoterMenu folders={folders_array} tags={tags_array}/>, document.getElementById('quoterForms'));
     React.render(<QuoterAccess/>, document.getElementById('main-menu-container'));
@@ -41,6 +51,7 @@ var QuoterMenu = React.createClass({
     },
     addAuthor: function(author) {
         var authors = this.state.authors;
+        removeFromIfExist(authors, function(x) { return x.value == author.value });
         authors = authors.concat(author);
         this.setState({authors: authors});
     },
@@ -587,11 +598,7 @@ var TagSelector = React.createClass({
         this.setState({selectedTags : newTags});
     },
     removeTag: function(tag_display) {
-        var tags = this.state.selectedTags;
-        var searched = tags.filter(function(x) { x.display == tag_display });
-        to_remove = searched[0];
-        var idx_to_remove = tags.indexOf(to_remove);
-        tags.splice(idx_to_remove, 1);
+        var tags = removeFromIfExist(this.state.selectedTag, function(x) { x.display == tag_display });
         this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
