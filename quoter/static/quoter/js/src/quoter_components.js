@@ -869,37 +869,39 @@ var InfiniteAuthorSelector = React.createClass({
         authors: React.PropTypes.array.isRequired
     },
     getInitialState: function() { 
-        return { numAuthors: 1 }
+        return { authors: [this.buildAuthor(0)] }
     },
     empty: function() {
+        this.setState(getInitialState());
         this.refs[0].empty();
-        this.setState({numAuthors:1});
-    },
-    propTypes: {
-        authors: React.PropTypes.array.isRequired
     },
     addAuthor: function(e) {
         if (e) {
             e.preventDefault();
         }
-        this.setState({numAuthors : this.state.numAuthors + 1});
+        var selectors = this.state.authors;
+        selectors = selectors.concat(this.buildAuthor(selectors.length))
+        this.setState({authors: selectors});
+    },
+    componentWillReceiveProps: function(newprops) {
+        var newSelectors = []
+        for (var i = 0; i < this.state.authors.length; i++) {
+            newSelectors.push(this.buildAuthor(i));
+        }
+        this.setState({authors: newSelectors});
     },
     reinitalize: function() {
         this.setState(getInitialState());
     },
-    buildAuthors: function() {
-        authors = [];
-        for (i = 0; i < this.state.numAuthors; i++) {
-            authors.push(
-                <div className="input-group">
-                    <PrefilledSelector options={this.props.authors} key={i} ref={i}/>
-                    <span className="input-group-btn">
-                        <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
-                    </span>
-                </div>
-            )
+    removeAuthor: function(selector) {
+        removeAuthor();
+    },
+    buildAuthor: function(id) {
+        if (id == 0) {
+            return (<AuthorSelector isFirst=true callback={this.removeAuthor}/>)
+        } else {
+            return (<AuthorSelector isFirst=false callback={this.removeAuthor}/>)
         }
-        return authors;
     },
     getValue: function() {
         results = [];
@@ -911,17 +913,51 @@ var InfiniteAuthorSelector = React.createClass({
         return results;
     },
     render: function() { 
-        authors = this.buildAuthors();
-        this.authors_input = authors;
         return (
             <div id="authors_for_source">
                 <div className="form-group author-group">
                     <label htmlFor="source_author">Author(s)</label>
-                    {authors}
+                    {this.state.authors}
                 </div>
                 <div className="form-group" id="source_author_adder">
                     <a onClick={this.addAuthor} href="#" id="source-author-add">Add another author to this source.</a>
                 </div>
+            </div>
+        );
+    }
+});
+
+var AuthorSelector = React.createClass({
+    propTypes: {
+        isFirst: React.PropTypes.bool.isRequired,
+        callbackRemove: React.PropTypes.func.isRequired
+    },
+    handleRemove: function() {
+        this.props.callbackRemove(this);
+    },
+    getButtons: function() {
+        if (isFirst) {
+            return (
+                <span className="input-group-btn">
+                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
+                </span>
+            );
+        } else {
+            return (
+                <span className="input-group-btn">
+                    <button className="btn btn-default" id="button-new-author" 
+                            onClick={this.removeAuthor} type="button">Remove</button>
+                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
+                </span>
+            );
+        }
+    },
+    render: function() {
+        var buttons = getButtons();
+        return (
+            <div className="input-group">
+                <PrefilledSelector options={this.props.authors} key={id}/>
+                {buttons}
             </div>
         );
     }

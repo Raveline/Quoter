@@ -1,13 +1,3 @@
-function removeFromIfExist(array, matcher) {
-    var searched = array.filter(matcher);
-    if (searched.length > 0) {
-        to_remove = searched[0];
-        var idx_to_remove = array.indexOf(to_remove);
-        array.splice(idx_to_remove, 1);
-    }
-    return array;
-}
-
 buildQuoter = function(folders_array, tags_array) {
     React.render(React.createElement(QuoterMenu, {folders: folders_array, tags: tags_array}), document.getElementById('quoterForms'));
     React.render(React.createElement(QuoterAccess, null), document.getElementById('main-menu-container'));
@@ -51,7 +41,6 @@ var QuoterMenu = React.createClass({displayName: "QuoterMenu",
     },
     addAuthor: function(author) {
         var authors = this.state.authors;
-        removeFromIfExist(authors, function(x) { return x.value == author.value });
         authors = authors.concat(author);
         this.setState({authors: authors});
     },
@@ -598,7 +587,11 @@ var TagSelector = React.createClass({displayName: "TagSelector",
         this.setState({selectedTags : newTags});
     },
     removeTag: function(tag_display) {
-        var tags = removeFromIfExist(this.state.selectedTag, function(x) { x.display == tag_display });
+        var tags = this.state.selectedTags;
+        var searched = tags.filter(function(x) { x.display == tag_display });
+        to_remove = searched[0];
+        var idx_to_remove = tags.indexOf(to_remove);
+        tags.splice(idx_to_remove, 1);
         this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
@@ -869,37 +862,54 @@ var InfiniteAuthorSelector = React.createClass({displayName: "InfiniteAuthorSele
         authors: React.PropTypes.array.isRequired
     },
     getInitialState: function() { 
-        return { numAuthors: 1 }
+        return { authors: [this.buildAuthor(0)] }
     },
     empty: function() {
+        this.setState(getInitialState());
         this.refs[0].empty();
-        this.setState({numAuthors:1});
-    },
-    propTypes: {
-        authors: React.PropTypes.array.isRequired
     },
     addAuthor: function(e) {
         if (e) {
             e.preventDefault();
         }
-        this.setState({numAuthors : this.state.numAuthors + 1});
+        var selectors = this.state.authors;
+        selectors = selectors.concat(this.buildAuthor(selectors.length))
+        this.setState({authors: selectors});
+    },
+    componentWillReceiveProps: function(newprops) {
+        var newSelectors = []
+        for (var i = 0; i < this.state.authors.length; i++) {
+            newSelectors.push(this.buildAuthor(i));
+        }
+        this.setState({authors: newSelectors});
     },
     reinitalize: function() {
         this.setState(getInitialState());
     },
-    buildAuthors: function() {
-        authors = [];
-        for (i = 0; i < this.state.numAuthors; i++) {
-            authors.push(
-                React.createElement("div", {className: "input-group"}, 
-                    React.createElement(PrefilledSelector, {options: this.props.authors, key: i, ref: i}), 
-                    React.createElement("span", {className: "input-group-btn"}, 
-                        React.createElement("button", {className: "btn btn-default", id: "button-new-author", type: "button"}, "Add new")
-                    )
+    removeAuthor: function(e) {
+        console.log("Here !");
+    },
+    buildAuthor: function(id) {
+        if (id == 0) {
+            var button = (
+                React.createElement("span", {className: "input-group-btn"}, 
+                    React.createElement("button", {className: "btn btn-default", id: "button-new-author", type: "button"}, "Add new")
                 )
             )
+        } else {
+            var button = 
+                React.createElement("span", {className: "input-group-btn"}, 
+                    React.createElement("button", {className: "btn btn-default", id: "button-new-author", 
+                            onClick: this.removeAuthor, type: "button"}, "Remove"), 
+                    React.createElement("button", {className: "btn btn-default", id: "button-new-author", type: "button"}, "Add new")
+                )
         }
-        return authors;
+        return (
+                React.createElement("div", {className: "input-group"}, 
+                    React.createElement(PrefilledSelector, {options: this.props.authors, key: id}), 
+                    button
+                )
+        )
     },
     getValue: function() {
         results = [];
@@ -911,17 +921,51 @@ var InfiniteAuthorSelector = React.createClass({displayName: "InfiniteAuthorSele
         return results;
     },
     render: function() { 
-        authors = this.buildAuthors();
-        this.authors_input = authors;
         return (
             React.createElement("div", {id: "authors_for_source"}, 
                 React.createElement("div", {className: "form-group author-group"}, 
                     React.createElement("label", {htmlFor: "source_author"}, "Author(s)"), 
-                    authors
+                    this.state.authors
                 ), 
                 React.createElement("div", {className: "form-group", id: "source_author_adder"}, 
                     React.createElement("a", {onClick: this.addAuthor, href: "#", id: "source-author-add"}, "Add another author to this source.")
                 )
+            )
+        );
+    }
+});
+
+var AuthorSelector = React.createClass({displayName: "AuthorSelector",
+    propTypes: {
+        isFirst: React.PropTypes.bool.isRequired,
+        callbackRemove: React.PropTypes.func.isRequired
+    },
+    handleRemove: function() {
+        this.props.callbackRemove(this);
+    },
+    getButtons: function() {
+        if (isFirst) {
+            return (
+                React.createElement("span", {className: "input-group-btn"}, 
+                    React.createElement("button", {className: "btn btn-default", id: "button-new-author", type: "button"}, "Add new")
+                )
+            );
+        } else {
+            return (
+                React.createElement("span", {className: "input-group-btn"}, 
+                    React.createElement("button", {className: "btn btn-default", id: "button-new-author", 
+                            onClick: this.removeAuthor, type: "button"}, "Remove"), 
+                    React.createElement("button", {className: "btn btn-default", id: "button-new-author", type: "button"}, "Add new")
+                )
+            );
+        }
+    },
+    render: function() {
+        var buttons = getButtons();
+        return (
+            React.createElement("div", {className: "input-group"}, 
+                React.createElement(PrefilledSelector, {options: this.props.authors, key: id}), 
+                buttons
             )
         );
     }
