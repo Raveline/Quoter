@@ -147,7 +147,14 @@ def updateAuthor(request, author_id):
 
 @login_required
 def updateSource(request, source_id):
-    pass
+    to_modify = Author.objects.get(pk=source_id,
+                                   folder_id=get_current_folder_id(request))
+    authors = read_authors(request.POST["authors"])
+    metadata = read_metadatas(request.POST["metadata"])
+    to_modify.title = request.POST["title"]
+    to_modify.authors = authors
+    to_modify.metadata = metadata
+    return json_creation_success(to_modify)
 
 
 @login_required
