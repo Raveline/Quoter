@@ -71,7 +71,8 @@ var QuoterMenu = React.createClass({
             <FolderForm folders={this.props.folders}/>
             <FindForm tags = {this.state.tags} sources={this.state.sources} authors={this.state.authors} />
             <QuoteForm authors={this.state.authors} sources={this.state.sources} tags={this.state.tags} addTag={this.addTag}/>
-            <SourceForm authors={this.state.authors} sources={this.state.sources} addSource={this.addSource}/>
+            <SourceForm authors={this.state.authors} sources={this.state.sources} addSource={this.addSource}
+                        modifiables={this.state.sources} url_get="/source/load/" url_modify="/source/update/"/>
             <AuthorForm authors={this.state.authors} addAuthor={this.addAuthor} 
                         modifiables={this.state.authors} url_get="/author/load/" url_modify="/author/update/"/>
         </div>
@@ -133,6 +134,10 @@ var PrefilledSelector = React.createClass({
     },
     getValue: function() {
         return this.refs.selector.getDOMNode().value;
+    },
+    setValue: function(value) {
+        this.setState({'selected': value});
+        this.callParameterChangeIfNeeded(value);
     },
     render: function() { 
         options = this.buildOptions();
@@ -868,40 +873,52 @@ var InfiniteAuthorSelector = React.createClass({
     propTypes: {
         authors: React.PropTypes.array.isRequired
     },
+    setValues: function(authors) {
+        // Asynchronously update the field that we'll create
+        this.setState({numAuthors: authors.length}, function() {
+            for (var i = 0; i < authors.length; i++) {
+                this.refs[i].setValue(authors[i]);
+            }
+        });
+    },
     getInitialState: function() { 
-        return { authors: [this.buildAuthor(0)] }
+        return { numAuthors: 1 }
     },
     empty: function() {
-        this.setState(getInitialState());
+        this.setState(this.getInitialState());
         this.refs[0].empty();
     },
     addAuthor: function(e) {
         if (e) {
             e.preventDefault();
         }
-        var selectors = this.state.authors;
-        selectors = selectors.concat(this.buildAuthor(selectors.length))
-        this.setState({authors: selectors});
-    },
-    componentWillReceiveProps: function(newprops) {
-        var newSelectors = []
-        for (var i = 0; i < this.state.authors.length; i++) {
-            newSelectors.push(this.buildAuthor(i));
-        }
-        this.setState({authors: newSelectors});
+        this.setState({numAuthors: this.state.numAuthors + 1});
     },
     reinitalize: function() {
         this.setState(getInitialState());
     },
-    removeAuthor: function(selector) {
-        removeAuthor();
+    removeAuthor: function(e) {
+        if (e) {
+            e.preventDefault();
+        }
+        this.setState({numAuthors: this.state.numAuthors - 1});
+    },
+    buildAuthors: function() {
+        toReturn = [];
+        for (var i = 0; i < this.state.numAuthors; i++) {
+            toReturn.push(this.buildAuthor(i));
+        }
+        return toReturn;
     },
     buildAuthor: function(id) {
-        if (id == 0) {
-            return (<AuthorSelector isFirst=true callback={this.removeAuthor}/>)
-        } else {
-            return (<AuthorSelector isFirst=false callback={this.removeAuthor}/>)
-        }
+        return (
+            <div className="input-group">
+                <PrefilledSelector ref={id} options={this.props.authors}/>
+                <span className="input-group-btn">
+                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
+                </span>
+            </div>
+        )
     },
     getValue: function() {
         results = [];
@@ -913,51 +930,23 @@ var InfiniteAuthorSelector = React.createClass({
         return results;
     },
     render: function() { 
+        var authors = this.buildAuthors();
+        var linkRemove = "";
+        if (this.state.numAuthors > 1) {
+            linkRemove = (<div className="form-group">
+                            <a href="#" onClick={this.removeAuthor}>Remove an author from this source</a>
+                          </div>)
+        }
         return (
             <div id="authors_for_source">
                 <div className="form-group author-group">
                     <label htmlFor="source_author">Author(s)</label>
-                    {this.state.authors}
+                    {authors}
                 </div>
-                <div className="form-group" id="source_author_adder">
-                    <a onClick={this.addAuthor} href="#" id="source-author-add">Add another author to this source.</a>
+                <div className="form-group">
+                    <a onClick={this.addAuthor} href="#">Add another author to this source.</a>
                 </div>
-            </div>
-        );
-    }
-});
-
-var AuthorSelector = React.createClass({
-    propTypes: {
-        isFirst: React.PropTypes.bool.isRequired,
-        callbackRemove: React.PropTypes.func.isRequired
-    },
-    handleRemove: function() {
-        this.props.callbackRemove(this);
-    },
-    getButtons: function() {
-        if (isFirst) {
-            return (
-                <span className="input-group-btn">
-                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
-                </span>
-            );
-        } else {
-            return (
-                <span className="input-group-btn">
-                    <button className="btn btn-default" id="button-new-author" 
-                            onClick={this.removeAuthor} type="button">Remove</button>
-                    <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
-                </span>
-            );
-        }
-    },
-    render: function() {
-        var buttons = getButtons();
-        return (
-            <div className="input-group">
-                <PrefilledSelector options={this.props.authors} key={id}/>
-                {buttons}
+                {linkRemove}
             </div>
         );
     }
@@ -985,6 +974,12 @@ var SingleMetadata = React.createClass({
         }
         return [];
     },
+    setValue: function(metadata) {
+        for (var key in metadata) {
+            this.refs.metadata1.getDOMNode().value = key;
+            this.refs.metadata2.getDOMNode().value = metadata[key];
+        }
+    },
     render: function() {
         return (
             <div id="metadata-container">
@@ -1004,6 +999,13 @@ var SingleMetadata = React.createClass({
 var InfiniteMetadata = React.createClass({
     getInitialState: function() {
         return { metadataNumber: 1 }
+    },
+    setValues: function(metadata) {
+        this.setState({metadataNumber: metadata.length}, function() {
+            for (var i = 0; i < metadata.length; i++) {
+                this.refs[i].setValue(metadata[i]);
+            }
+        });
     },
     empty: function() {
         this.refs[0].empty();
@@ -1036,11 +1038,16 @@ var InfiniteMetadata = React.createClass({
 });
 
 var SourceForm = React.createClass({
-    mixins: [AjaxPoster],
+    mixins: [AjaxPoster, AjaxGetter, Editable],
     propTypes: {
         addSource: React.PropTypes.func.isRequired,
         authors: React.PropTypes.array.isRequired,
         sources: React.PropTypes.array.isRequired
+    },
+    load: function(data) {
+        this.refs.title.getDOMNode().value = data.title;
+        this.refs.authors.setValues(data.authors);
+        this.refs.metadata.setValues(data.metadata);
     },
     handleSubmit: function(e) {
         e.preventDefault();
@@ -1082,6 +1089,14 @@ var SourceForm = React.createClass({
                         </div>
                         <button type="submit" className="btn btn-default">Save</button>
                     </form>
+                </div>
+            </div>
+            <div className="panel panel-default">
+                <div className="panel-heading">
+                    <h3 className="panel-title">... or pick a source to modify</h3>
+                </div>
+                <div className="panel-body">
+                    {this.renderEdit()}
                 </div>
             </div>
         </div>
