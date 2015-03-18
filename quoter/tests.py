@@ -54,7 +54,7 @@ class TestSource(QuoterTests):
         self.odyssey.metadatas.add(metaInfo)
         self.assertEqual(self.odyssey.to_dict(),
                          {'title': 'Odyssey', 'authors': [homer.pk],
-                          'metadatas': [{metaTrad.name: metaInfo.value}]})
+                          'metadata': [{metaTrad.name: metaInfo.value}]})
 
     def test_attach_author_to_source(self):
         """Attaching one author to the source works."""
