@@ -1001,7 +1001,7 @@ var InfiniteMetadata = React.createClass({
         return { metadataNumber: 1 }
     },
     setValues: function(metadata) {
-        this.setState({metadataNumber: metadata.length}, function() {
+        this.setState({metadataNumber: Math.max(metadata.length, 1)}, function() {
             for (var i = 0; i < metadata.length; i++) {
                 this.refs[i].setValue(metadata[i]);
             }
