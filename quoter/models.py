@@ -60,7 +60,7 @@ class Source(models.Model):
     def to_dict(self):
         return {'title': self.title,
                 'authors': [auth.pk for auth in self.authors.all()],
-                'metadatas': [si.to_dict() for si in self.metadatas.all()]}
+                'metadata': [si.to_dict() for si in self.metadatas.all()]}
 
 
 class Tag(models.Model):
