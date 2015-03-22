@@ -3,6 +3,29 @@ var React = require('react');
 var common = require('./common.js');
 var DjangoCSRF = require('./csrf.js');
 
+var SearchResult = React.createClass({
+    propTypes: {
+        quote_id: React.PropTypes.number.isRequired,
+        content: React.PropTypes.string.isRequired,
+        source: React.PropTypes.string.isRequired,
+        page: React.PropTypes.string.isRequired
+    },
+    editQuote: function(quote) {
+    },
+    render: function() { return (
+        <div className="panel panel-default">
+            <div className="panel-body">
+                {this.props.content}
+            </div>
+            <div className="panel-footer">
+                {this.props.source} - {this.props.page}
+                <button onClick={this.editQuote} className="btn btn-default">Edit</button>
+            </div>
+        </div>
+        );
+    }
+});
+
 var FindForm = React.createClass({
     propTypes: {
         authors: React.PropTypes.array.isRequired,
@@ -11,21 +34,12 @@ var FindForm = React.createClass({
     getInitialState: function() {
         return {'searchResults':[]}
     },
-    editQuote: function(quote) {
-    },
     callbackDisplay: function(data) {
         var results = [];
         for (var i = 0; i < data.length; i++) {
             results.push(
-                <div className="panel panel-default">
-                    <div className="panel-body">
-                        {data[i].content}
-                    </div>
-                    <div className="panel-footer">
-                        {data[i].source} - {data[i].page}
-                        <button onClick={this.editQuote} className="btn btn-default">Edit</button>
-                    </div>
-                </div>
+                <SearchResult quote_id = {data[i].value} content = {data[i].content}
+                              source = {data[i].source} page = {data[i].page}/>
             );
         }
         if (data.length == 0) {
