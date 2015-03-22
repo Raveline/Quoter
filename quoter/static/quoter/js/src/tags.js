@@ -82,7 +82,7 @@ var TagSelector = React.createClass({
         this.setState({tagInput: this.refs.tag.getDOMNode().value});
     },
     getValues: function() {
-        result = [];
+        var result = [];
         for (var i = 0; i < this.state.selectedTags.length; i++) {
             var value_or_new = this.state.selectedTags[i].value || 'new';
             result.push({'display': this.state.selectedTags[i].display, 'value':value_or_new});
@@ -137,7 +137,7 @@ var Autocompleter = React.createClass({
         if (current.length >= 2) {
             var regexp = new RegExp(current.toLowerCase());
             var allDisplay = this.props.choice.filter(function(x) { return regexp.test(x.display.toLowerCase()); });
-            selectedIdx = -1;
+            var selectedIdx = -1;
             if (allDisplay.length > 0) {
                 selectedIdx = 1;
             }
@@ -152,7 +152,7 @@ var Autocompleter = React.createClass({
         }
     },
     down: function() {
-        selectedIdx = this.state.selectedIdx;
+        var selectedIdx = this.state.selectedIdx;
         if (this.state.selectable.length) {
             selectedIdx++;
             this.correctSelected(selectedIdx);
@@ -162,7 +162,7 @@ var Autocompleter = React.createClass({
         }
     },
     up: function() {
-        selectedIdx = this.state.selectedIdx;
+        var selectedIdx = this.state.selectedIdx;
         if (this.state.selectable.length) {
             selectedIdx--;
             this.correctSelected(selectedIdx);
@@ -171,10 +171,11 @@ var Autocompleter = React.createClass({
         }
     },
     correctSelected: function(selectedIdx) {
+        var selectedIdx = undefined;
         if (selectedIdx < 0) {
-            selectedIdx = this.state.selectable.length -1;
+            var selectedIdx = this.state.selectable.length -1;
         } else if (selectedIdx > this.state.selectable.length - 1) {
-            selectedIdx = 0;
+            var selectedIdx = 0;
         }
         this.setState({selectedIdx:selectedIdx});
     },
