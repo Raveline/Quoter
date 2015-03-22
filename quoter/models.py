@@ -67,6 +67,9 @@ class Tag(models.Model):
     name= models.CharField(max_length=64)
     folder = models.ForeignKey(Folder)
 
+    def __str__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
         return self.name
 

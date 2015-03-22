@@ -397,6 +397,8 @@ def jsonify_quote_array(quote_array):
     for quote in quote_array:
         all_quotes.append({'content': quote.content,
                            'source': str(quote.source),
+                           'value': quote.pk,
+                           'tags': [str(tag) for tag in quote.tags.all()],
                            'page': quote.page})
     return all_quotes
 
