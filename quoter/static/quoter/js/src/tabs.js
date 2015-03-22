@@ -1,3 +1,7 @@
+"use strict"
+var React = require('react/addons');
+var $ = require('jquery');
+
 var Tab = React.createClass({
     propTypes: {
         isActive: React.PropTypes.bool.isRequired,
@@ -76,3 +80,5 @@ var QuoterNav = React.createClass({
     );
     }
 });
+
+module.exports = QuoterAccess

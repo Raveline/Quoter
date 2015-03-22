@@ -1,3 +1,7 @@
+"use strict"
+var React = require('react');
+var utils = require("./utils.js");
+
 var SingleTag = React.createClass({
     propTypes: {
         name: React.PropTypes.string.isRequired,
@@ -39,7 +43,7 @@ var TagSelector = React.createClass({
         this.setState({selectedTags : newTags});
     },
     removeTag: function(tag_display) {
-        var tags = removeFromIfExist(this.state.selectedTag, function(x) { x.display == tag_display });
+        var tags = utils.removeFromIfExist(this.state.selectedTag, function(x) { x.display == tag_display });
         this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
@@ -101,7 +105,7 @@ var TagSelector = React.createClass({
         return toReturn;
     },
     render: function() { 
-        tags = this.listTags();
+        var tags = this.listTags();
         return (
         <div>
             <div className="form-group">
@@ -206,3 +210,5 @@ var Autocompleter = React.createClass({
         return options;
     }
 });
+
+module.exports = TagSelector

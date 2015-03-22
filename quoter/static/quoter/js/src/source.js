@@ -1,5 +1,10 @@
+"use strict"
+var React = require('react');
+var common = require("./common.js");
+var DjangoCSRF = require('./csrf.js');
+
 var SourceForm = React.createClass({
-    mixins: [AjaxPoster, AjaxGetter, Editable],
+    mixins: [common.AjaxPoster, common.AjaxGetter, common.Editable],
     propTypes: {
         addSource: React.PropTypes.func.isRequired,
         authors: React.PropTypes.array.isRequired,
@@ -100,7 +105,7 @@ var InfiniteAuthorSelector = React.createClass({
         this.setState({numAuthors: this.state.numAuthors - 1});
     },
     buildAuthors: function() {
-        toReturn = [];
+        var toReturn = [];
         for (var i = 0; i < this.state.numAuthors; i++) {
             toReturn.push(this.buildAuthor(i));
         }
@@ -109,7 +114,7 @@ var InfiniteAuthorSelector = React.createClass({
     buildAuthor: function(id) {
         return (
             <div className="input-group">
-                <PrefilledSelector ref={id} options={this.props.authors}/>
+                <common.PrefilledSelector ref={id} options={this.props.authors}/>
                 <span className="input-group-btn">
                     <button className="btn btn-default" id="button-new-author" type="button">Add new</button>
                 </span>
@@ -236,3 +241,5 @@ var SingleMetadata = React.createClass({
         )
     }
 });
+
+module.exports = SourceForm

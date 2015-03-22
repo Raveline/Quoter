@@ -1,5 +1,10 @@
+"use strict";
+var React = require('react');
+var common = require('./common.js');
+var DjangoCSRF = require('./csrf.js');
+
 var AddFolderForm = React.createClass({
-    mixins: [AjaxPoster],
+    mixins: [common.AjaxPoster],
     render: function() { return (
         <form method="POST" action="/folder/add" role="form" onSubmit={this.handleSubmit}>
             <DjangoCSRF/>
@@ -27,7 +32,7 @@ var AddFolderForm = React.createClass({
 });
 
 var FolderForm = React.createClass({
-    mixins: [AjaxPoster],
+    mixins: [common.AjaxPoster],
     propTypes: {
         folders: React.PropTypes.array.isRequired
     },
@@ -53,7 +58,7 @@ var FolderForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="folder-pick">Pick an existing folder</label>
                             <div className="input-group">
-                                <PrefilledSelector ref="folderpick" options={this.props.folders}/>
+                                <common.PrefilledSelector ref="folderpick" options={this.props.folders}/>
                                 <span className="input-group-btn">
                                     <button id="pickExistingFolder" className="btn btn-default" type="submit">Pick</button>
                                 </span>
@@ -66,3 +71,5 @@ var FolderForm = React.createClass({
     );
     }
 });
+
+module.exports = FolderForm

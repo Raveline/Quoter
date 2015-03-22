@@ -1,5 +1,11 @@
+"use strict";
+var React = require('react');
+var common = require('./common.js');
+var DjangoCSRF = require('./csrf.js');
+var TagSelector = require('./tags.js');
+
 var QuoteForm = React.createClass({
-    mixins: [AjaxPoster, AjaxGetter],
+    mixins: [common.AjaxPoster, common.AjaxGetter],
     propTypes: {
         sources: React.PropTypes.array.isRequired,
         tags: React.PropTypes.array.isRequired,
@@ -44,7 +50,7 @@ var QuoteForm = React.createClass({
     },
     updateAuthors: function(source) {
         if (source) {
-            list_of_authors = this.get("/author/" + source + "/of", function(list_of_authors) {
+            this.get("/author/" + source + "/of", function(list_of_authors) {
                 this.setState({potentialAuthors: list_of_authors});
             }.bind(this));
         }
@@ -64,7 +70,7 @@ var QuoteForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="source">Source</label>
                             <div className="input-group">
-                                <PrefilledSelector ref="source" options={this.props.sources} callback={this.updateAuthors}/>
+                                <common.PrefilledSelector ref="source" options={this.props.sources} callback={this.updateAuthors}/>
                                 <span className="input-group-btn">
                                     <button className="btn btn-default" id="button-new-source" type="button">Add new</button>
                                 </span>
@@ -72,7 +78,7 @@ var QuoteForm = React.createClass({
                         </div>
                         <div className="form-group">
                             <label htmlFor="author">Author</label>
-                                <PrefilledMultiSelect ref="authors" options={this.state.potentialAuthors}/>
+                                <common.PrefilledMultiSelect ref="authors" options={this.state.potentialAuthors}/>
                         </div>
                         <div className="form-group">
                             <label htmlFor="content">Quote</label>
@@ -95,3 +101,5 @@ var QuoteForm = React.createClass({
     );
     }
 });
+
+module.exports = QuoteForm

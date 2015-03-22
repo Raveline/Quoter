@@ -1,3 +1,8 @@
+"use strict";
+var React = require('react');
+var common = require('./common.js');
+var DjangoCSRF = require('./csrf.js');
+
 var FindForm = React.createClass({
     propTypes: {
         authors: React.PropTypes.array.isRequired,
@@ -50,7 +55,7 @@ var FindForm = React.createClass({
 });
 
 var FindByWordForm = React.createClass({
-    mixins: [AjaxGetter],
+    mixins: [common.AjaxGetter],
     propTypes: {
         callbackDisplay: React.PropTypes.func.isRequired
     },
@@ -77,7 +82,7 @@ var FindByWordForm = React.createClass({
 });
 
 var FindBySourceForm = React.createClass({
-    mixins: [AjaxGetter],
+    mixins: [common.AjaxGetter],
     propTypes: {
         sources: React.PropTypes.array.isRequired,
         callbackDisplay: React.PropTypes.func.isRequired
@@ -88,7 +93,7 @@ var FindBySourceForm = React.createClass({
             <div className="form-group">
                 <label htmlFor="find-source">By source</label>
                 <div className="input-group">
-                    <PrefilledSelector ref="source" options={this.props.sources}/>
+                    <common.PrefilledSelector ref="source" options={this.props.sources}/>
                     <span className="input-group-btn">
                         <button id="findBySource" onClick={this.searchBySource} className="btn btn-default" type="button">Go</button>
                     </span>
@@ -105,7 +110,7 @@ var FindBySourceForm = React.createClass({
 });
 
 var FindByAuthorForm = React.createClass({
-    mixins: [AjaxGetter],
+    mixins: [common.AjaxGetter],
     propTypes: {
         authors: React.PropTypes.array.isRequired,
         callbackDisplay: React.PropTypes.func.isRequired
@@ -116,7 +121,7 @@ var FindByAuthorForm = React.createClass({
             <div className="form-group">
                 <label htmlFor="find-author">By author</label>
                 <div className="input-group">
-                    <PrefilledSelector ref="author" options={this.props.authors}/>
+                    <common.PrefilledSelector ref="author" options={this.props.authors}/>
                     <span className="input-group-btn">
                         <button onClick={this.searchByAuthor} className="btn btn-default" type="button">Go</button>
                     </span>
@@ -129,4 +134,6 @@ var FindByAuthorForm = React.createClass({
         var author = this.refs.author.getValue();
         this.get('/find/author/' + author, this.props.callbackDisplay);
     }
-})
+});
+
+module.exports = FindForm

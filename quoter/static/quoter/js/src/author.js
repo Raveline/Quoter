@@ -1,7 +1,10 @@
+"use strict";
 var React = require('react');
+var common = require('./common.js');
+var DjangoCSRF = require('./csrf.js');
 
 var AuthorForm = React.createClass({
-    mixins: [AjaxPoster, AjaxGetter, Editable],
+    mixins: [common.AjaxPoster, common.AjaxGetter, common.Editable],
     propTypes: {
         addAuthor: React.PropTypes.func.isRequired,
         authors: React.PropTypes.array.isRequired
@@ -32,7 +35,7 @@ var AuthorForm = React.createClass({
             }.bind(this));
     },
     render: function() { 
-        var editForm = this.renderEdit()
+        var editForm = this.renderEdit();
         return (
         <div id="author-add" className="tab-pane fade in">
             <div className="panel panel-default">
@@ -70,3 +73,5 @@ var AuthorForm = React.createClass({
     );
     }
 });
+
+module.exports = AuthorForm
