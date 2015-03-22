@@ -43,6 +43,7 @@ var QuoterMenu = React.createClass({
     },
     addSource: function(source) {
         var sources = this.state.sources;
+        utils.removeFromIfExist(sources, function(x) { return x.value == source.value });
         sources = sources.concat(source);
         this.setState({sources: sources});
     },

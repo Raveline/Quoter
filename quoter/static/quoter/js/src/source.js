@@ -31,9 +31,15 @@ var SourceForm = React.createClass({
                           'authors' : authors.toString(),
                           'metadata' : JSON.stringify(metadata)}
         // Call adder...
-        this.post('source/new', newSource, function(info) {
-                this.props.addSource(info.newObject);
-            }.bind(this));
+        var adder = function(info) {
+            this.props.addSource(info.newObject);
+        }.bind(this);
+        if (this.state.inEditMode) {
+            this.sendUpdate(newSource, adder);
+        } else {
+            this.post('source/new', newSource, adder);
+        }
+                
     },
     render: function() { return (
         <div id="source-add" className="tab-pane fade in">
@@ -53,7 +59,7 @@ var SourceForm = React.createClass({
                             <label>Metadata</label>
                             <InfiniteMetadata ref="metadata"/>
                         </div>
-                        <button type="submit" className="btn btn-default">Save</button>
+                        <button type="submit" className="btn btn-default">{this.saveOrModify()}</button>
                     </form>
                 </div>
             </div>
@@ -122,7 +128,7 @@ var InfiniteAuthorSelector = React.createClass({
         )
     },
     getValue: function() {
-        results = [];
+        var results = [];
         for (var i = 0; i < this.state.numAuthors; i++) {
             if (this.refs[i]) {
                 results.push(this.refs[i].getValue());
@@ -178,9 +184,9 @@ var InfiniteMetadata = React.createClass({
         }
     },
     getValues: function() {
-        values = {};
+        var values = {};
         for (var i = 0; i < this.state.metadataNumber; i++) {
-            meta = this.refs[i].getValue();
+            var meta = this.refs[i].getValue();
             if (meta) {
                 values[meta[0]] = meta[1];
             }
@@ -213,8 +219,8 @@ var SingleMetadata = React.createClass({
         this.refs.metadata2.getDOMNode().value = '';
     },
     getValue: function() {
-        meta1 = this.refs.metadata1.getDOMNode().value;
-        meta2 = this.refs.metadata2.getDOMNode().value;
+        var meta1 = this.refs.metadata1.getDOMNode().value;
+        var meta2 = this.refs.metadata2.getDOMNode().value;
         if (meta1 && meta2) {
             return [meta1, meta2];
         }

@@ -60,11 +60,23 @@ exports.Editable = {
         url_get: React.PropTypes.string.isRequired,
         url_modify: React.PropTypes.string.isRequired
     },
-    getInitialState: function() { return { inEditMode: false } },
+    getInitialState: function() { return { inEditMode: false, currentId: 0} },
     getObjectAndLoad: function(e) {
         e.preventDefault();
         var to_modify = this.refs.to_modify.getValue();
+        this.setState({"inEditMode": true, currentId: to_modify});
         this.get(this.props.url_get + to_modify, this.load);
+    },
+    sendUpdate: function(new_data, callback) {
+        this.setState({inEditMode: false, currentId: 0});
+        this.post(this.props.url_modify + this.state.currentId, new_data, callback);
+    },
+    saveOrModify: function() {
+        if (this.state.inEditMode) {
+            return "Modify";
+        } else {
+            return "Save";
+        }
     },
     renderEdit: function() {
         return (

@@ -29,13 +29,17 @@ var AuthorForm = React.createClass({
         var newAuthor = { 'first_name' : first_name,
                           'last_name' : last_name,
                           'surname' : surname }
-        // Call adder...
-        this.post('author/new', newAuthor, function(info) {
-                this.props.addAuthor(info.newObject);
-            }.bind(this));
+        // Save or update then update list
+        var adder = function(info) {
+            this.props.addAuthor(info.newObject); 
+        }.bind(this);
+        if (this.state.inEditMode) {
+            this.sendUpdate(newAuthor, adder);
+        } else {
+            this.post('author/new', adder);
+        }
     },
     render: function() { 
-        var editForm = this.renderEdit();
         return (
         <div id="author-add" className="tab-pane fade in">
             <div className="panel panel-default">
@@ -57,7 +61,7 @@ var AuthorForm = React.createClass({
                             <label htmlFor="author_surname">Surname</label>
                             <input type="text" ref="author_surname" className="form-control"/>
                         </div>
-                        <button type="submit" className="btn btn-default">Save</button>
+                        <button type="submit" className="btn btn-default">{this.saveOrModify()}</button>
                     </form>
                 </div>
             </div>
@@ -66,7 +70,7 @@ var AuthorForm = React.createClass({
                     <h3 className="panel-title">... or pick an author to modify</h3>
                 </div>
                 <div className="panel-body">
-                    {editForm}
+                    {this.renderEdit()}
                 </div>
             </div>
         </div>
