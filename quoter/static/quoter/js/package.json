@@ -1,0 +1,22 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "description": "",
+  "devDependencies": {
+    "browserify": "3.x",
+    "reactify": "0.17.x",
+    "uglifyify": "2.x"
+  },
+  "dependencies": {
+    "react": "~0.12.1",
+    "jquery": "v2.1.1"
+  },
+  "main": "build/quoter_app.js",
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "scripts": {
+    "build-dev": "browserify -e build/quoter_app.js -t reactify -o quoter.dev.js -d",
+    "build-min": "browserify -e build/quoter_app.js -t reactify -t uglifyify -o quoter.min.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
