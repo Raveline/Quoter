@@ -1,11 +1,11 @@
 {% extends "quoter/structure.html" %}
 {% block content %}
-        <div class="well well-sm">Logged as {{ user.username }} || Current folder : {{ current_folder_name }} || <a href="/logout">Logout</a></div>
+    <div id="quoter_container">
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function(event) { 
             var app = window.app();
-            app.buildQuoter({{ folders }}, {{ tags }});
+            app.buildQuoter("{{user.username}}", "{{current_folder_name}}", {{ folders }}, {{ tags }});
         });
     </script>
 {% endblock %}
