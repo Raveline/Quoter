@@ -11,6 +11,8 @@ var FindForm = React.createClass({
     getInitialState: function() {
         return {'searchResults':[]}
     },
+    editQuote: function(quote) {
+    },
     callbackDisplay: function(data) {
         var results = [];
         for (var i = 0; i < data.length; i++) {
@@ -21,6 +23,7 @@ var FindForm = React.createClass({
                     </div>
                     <div className="panel-footer">
                         {data[i].source} - {data[i].page}
+                        <button onClick={this.editQuote} className="btn btn-default">Edit</button>
                     </div>
                 </div>
             );
