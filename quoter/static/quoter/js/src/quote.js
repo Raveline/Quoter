@@ -5,7 +5,7 @@ var DjangoCSRF = require('./csrf.js');
 var TagSelector = require('./tags.js');
 
 var QuoteForm = React.createClass({
-    mixins: [common.AjaxPoster, common.AjaxGetter],
+    mixins: [common.AjaxPoster, common.AjaxGetter, common.Editable],
     propTypes: {
         sources: React.PropTypes.array.isRequired,
         tags: React.PropTypes.array.isRequired,
@@ -14,6 +14,14 @@ var QuoteForm = React.createClass({
     getInitialState: function() { return {
             potentialAuthors: []
         }
+    },
+    load: function(data) {
+        this.refs.source.setValue(data.source);
+        this.refs.quote.getDOMNode().value = data.content;
+        this.refs.page.getDOMNode().value = data.page;
+        this.refs.comment.getDOMNode().value = data.comment;
+        this.refs.authors.setValues(data.authority);
+        this.refs.tags.setValues(data.tags);
     },
     handleSubmit: function(e) {
         e.preventDefault();
@@ -34,12 +42,17 @@ var QuoteForm = React.createClass({
                          'page' : page,
                          'tags' : JSON.stringify(tags),
                          'comment' : comment }
-        this.post('quote/new', quote_obj, function() {
+        var adder = function() {
             var new_tags = tags.filter(function(x) { return x.key == 'new' });
             for (var i = 0; i < new_tags.length; i++) {
                 this.props.addTag(new_tags[i]);
             }
-        }.bind(this));
+        }.bind(this);
+        if (this.state.inEditMode) {
+            this.sendUpdate(quote_obj, adder);
+        } else {
+            this.post('quote/new', quote_obj);
+        }
         this.empty();
     },
     empty: function() {
@@ -93,7 +106,7 @@ var QuoteForm = React.createClass({
                             <label htmlFor="comment">Comment</label>
                             <textarea ref="comment" className="form-control" rows="4" name="comment"></textarea>
                         </div>
-                        <button type="submit" className="btn btn-default">Save</button>
+                        <button type="submit" className="btn btn-default">{this.saveOrModify()}</button>
                     </form>
                 </div>
             </div>
