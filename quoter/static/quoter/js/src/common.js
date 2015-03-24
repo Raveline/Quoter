@@ -61,11 +61,14 @@ exports.Editable = {
         url_modify: React.PropTypes.string.isRequired
     },
     getInitialState: function() { return { inEditMode: false, currentId: 0} },
-    getObjectAndLoad: function(e) {
-        e.preventDefault();
-        var to_modify = this.refs.to_modify.getValue();
+    getObjectAndLoad: function(to_modify) {
         this.setState({"inEditMode": true, currentId: to_modify});
         this.get(this.props.url_get + to_modify, this.load);
+    },
+    clickModify: function(e) {
+        e.preventDefault();
+        var to_modify = this.refs.to_modify.getValue();
+        this.getObjectAndLoad(to_modify);
     },
     sendUpdate: function(new_data, callback) {
         this.setState({inEditMode: false, currentId: 0});
@@ -83,7 +86,7 @@ exports.Editable = {
                 <div className="input-group">
                     <exports.PrefilledSelector ref="to_modify" options={this.props.modifiables}/>
                     <span className="input-group-btn">
-                        <button onClick={this.getObjectAndLoad} className="btn btn-default" type="button">
+                        <button onClick={this.clickModify} className="btn btn-default" type="button">
                             Modify
                         </button>
                     </span>
@@ -158,6 +161,9 @@ exports.PrefilledMultiSelect = React.createClass({
     },
     getValues: function() {
         return this.state.selected;
+    },
+    setValues: function(data) {
+        this.setState({selected: data});
     },
     handleChange: function(e) {
         var options = e.target.options;
