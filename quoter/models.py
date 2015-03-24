@@ -64,7 +64,7 @@ class Source(models.Model):
 
 
 class Tag(models.Model):
-    name= models.CharField(max_length=64)
+    name = models.CharField(max_length=64)
     folder = models.ForeignKey(Folder)
 
     def __str__(self):
@@ -72,6 +72,11 @@ class Tag(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def to_dict(self):
+        return {'display': self.name,
+                'value': self.pk}
+
 
 class Quote(models.Model):
     content = models.TextField()
@@ -81,6 +86,15 @@ class Quote(models.Model):
     page = models.CharField(max_length=32, blank=True)
     comment = models.TextField(default='')
     folder = models.ForeignKey(Folder)
+
+    def to_dict(self):
+        return {'content': self.content,
+                'authority': [auth.pk for auth in self.authority.all()],
+                'source': self.source.pk,
+                'tags': [tags.to_dict() for tags in self.tags.all()],
+                'page': self.page,
+                'comment': self.comment}
+
 
 class Template(models.Model):
     name = models.CharField(max_length=32, blank=True)

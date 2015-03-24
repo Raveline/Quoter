@@ -154,6 +154,21 @@ def updateSource(request, source_id):
     to_modify.title = request.POST["title"]
     to_modify.authors = authors
     to_modify.metadata = metadata
+    to_modify.save()
+    return json_creation_success(to_modify)
+
+
+@login_required
+def updateQuote(request, quote_id):
+    to_modify = Quote.objects.get(pk=quote_id,
+                                  folder_id=get_current_folder_id(request))
+    to_modify.authors = read_authors(request.POST['authors'])
+    to_modify.source_id = request.POST['source']
+    to_modify.tags = read_tags(request, request.POST['tags'])
+    to_modify.content = request.POST['content']
+    to_modify.page = request.POST['page']
+    to_modify.comment = request.POST['comment']
+    to_modify.save()
     return json_creation_success(to_modify)
 
 
@@ -194,6 +209,14 @@ def loadSource(request, source_id):
     source = Source.objects.get(folder_id=get_current_folder_id(request),
                                 pk=source_id)
     response = {'result': 'success', 'data': source.to_dict()}
+    return json_response(response)
+
+
+@login_required
+def loadQuote(request, quote_id):
+    quote = Quote.objects.get(folder_id=get_current_folder_id(request),
+                              pk=quote_id)
+    response = {'result': 'success', 'data': quote.to_dict()}
     return json_response(response)
 
 
@@ -259,11 +282,6 @@ def deleteQuote(request):
 
 
 @login_required
-def updateQuote(request):
-    pass
-
-
-@login_required
 def deleteSource(request):
     pass
 
@@ -299,7 +317,7 @@ def read_tags(request, tags_string):
         tag.save()
         tags.append(tag)
     for t in identified:
-        if t['value'].isdigit():
+        if isinstance(t['value'], int) or t['value'].isdigit():
             tags.append(Tag.objects.get(pk=int(t['value'])))
 
     return tags
