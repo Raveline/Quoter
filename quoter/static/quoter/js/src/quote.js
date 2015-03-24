@@ -16,12 +16,11 @@ var QuoteForm = React.createClass({
         }
     },
     load: function(data) {
-        this.refs.source.setValue(data.source);
+        this.refs.source.setValue(data.source, this.refs.tags.setValues(data.tags));
         this.refs.quote.getDOMNode().value = data.content;
         this.refs.page.getDOMNode().value = data.page;
         this.refs.comment.getDOMNode().value = data.comment;
         this.refs.authors.setValues(data.authority);
-        this.refs.tags.setValues(data.tags);
     },
     handleSubmit: function(e) {
         e.preventDefault();

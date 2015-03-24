@@ -137,9 +137,13 @@ exports.PrefilledSelector = React.createClass({
     getValue: function() {
         return this.refs.selector.getDOMNode().value;
     },
-    setValue: function(value) {
-        this.setState({'selected': value});
-        this.callParameterChangeIfNeeded(value);
+    setValue: function(value, func) {
+        this.setState({'selected': value}, function() {
+            this.callParameterChangeIfNeeded(value);
+            if (func) {
+                func();
+            }
+        });
     },
     render: function() { 
         var options = this.buildOptions();
