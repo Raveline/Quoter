@@ -10,6 +10,9 @@ var Quoter = React.createClass({
         userName: React.PropTypes.string.isRequired,
         currentFolder: React.PropTypes.string.isRequired
     },
+    tabHandler: function(idx) {
+        this.refs.tabs.switchTab(idx);
+    },
     render: function() { return (
         <div>
         <div className="well well-sm">
@@ -17,10 +20,10 @@ var Quoter = React.createClass({
         </div>
         <div>
             <div className="col-md-2" role="navigation" id="main-menu-container">
-                <QuoterAccess/>
+                <QuoterAccess ref="tabs"/>
             </div>
             <div className="col-md-8" id="quoterForms">
-                <QuoterMenu folders={this.props.folders} tags={this.props.tags}/>
+                <QuoterMenu folders={this.props.folders} tags={this.props.tags} tabHandler={this.tabHandler}/>
             </div>
         </div>
         </div>

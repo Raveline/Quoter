@@ -8,9 +8,11 @@ var SearchResult = React.createClass({
         quote_id: React.PropTypes.number.isRequired,
         content: React.PropTypes.string.isRequired,
         source: React.PropTypes.string.isRequired,
-        page: React.PropTypes.string.isRequired
+        page: React.PropTypes.string.isRequired,
+        editFunc: React.PropTypes.func.isRequired
     },
-    editQuote: function(quote) {
+    editQuote: function() {
+        this.props.editFunc(this.props.quote_id)
     },
     render: function() { return (
         <div className="panel panel-default">
@@ -29,7 +31,8 @@ var SearchResult = React.createClass({
 var FindForm = React.createClass({
     propTypes: {
         authors: React.PropTypes.array.isRequired,
-        sources: React.PropTypes.array.isRequired
+        sources: React.PropTypes.array.isRequired,
+        quoteEdit: React.PropTypes.func.isRequired
     },
     getInitialState: function() {
         return {'searchResults':[]}
@@ -39,7 +42,8 @@ var FindForm = React.createClass({
         for (var i = 0; i < data.length; i++) {
             results.push(
                 <SearchResult quote_id = {data[i].value} content = {data[i].content}
-                              source = {data[i].source} page = {data[i].page}/>
+                              source = {data[i].source} page = {data[i].page}
+                              editFunc = {this.props.quoteEdit}/>
             );
         }
         if (data.length == 0) {

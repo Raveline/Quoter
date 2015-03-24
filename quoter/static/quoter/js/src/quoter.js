@@ -12,7 +12,8 @@ var FindForm = require('./finders.js');
 var QuoterMenu = React.createClass({
     propTypes: {
         folders: React.PropTypes.array.isRequired,
-        tags: React.PropTypes.array.isRequired
+        tags: React.PropTypes.array.isRequired,
+        tabHandler: React.PropTypes.func.isRequired
     },
     getInitialState: function() {
         return {
@@ -47,12 +48,18 @@ var QuoterMenu = React.createClass({
         sources = sources.concat(source);
         this.setState({sources: sources});
     },
+    quoteEdit: function(idx_quote) {
+        this.refs.quote.getObjectAndLoad(idx_quote);
+        this.props.tabHandler(2);
+    },
     render: function() { 
         return (
         <div className="tab-content">
             <FolderForm folders={this.props.folders}/>
-            <FindForm tags = {this.state.tags} sources={this.state.sources} authors={this.state.authors}/>
-            <QuoteForm authors={this.state.authors} sources={this.state.sources} tags={this.state.tags} addTag={this.addTag}/>
+            <FindForm tags = {this.state.tags} sources={this.state.sources} authors={this.state.authors}
+                      quoteEdit = {this.quoteEdit}/>
+            <QuoteForm ref="quote" authors={this.state.authors} sources={this.state.sources} tags={this.state.tags} 
+                      addTag={this.addTag} url_get="/quote/load/" url_modify="/quote/update/"/>
             <SourceForm authors={this.state.authors} sources={this.state.sources} addSource={this.addSource}
                         modifiables={this.state.sources} url_get="/source/load/" url_modify="/source/update/"/>
             <AuthorForm authors={this.state.authors} addAuthor={this.addAuthor} 
