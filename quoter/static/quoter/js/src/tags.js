@@ -43,7 +43,7 @@ var TagSelector = React.createClass({
         this.setState({selectedTags : newTags});
     },
     removeTag: function(tag_display) {
-        var tags = utils.removeFromIfExist(this.state.selectedTag, function(x) { x.display == tag_display });
+        var tags = utils.removeFromIfExist(this.state.selectedTags, function(x) { x.display == tag_display });
         this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
@@ -88,6 +88,9 @@ var TagSelector = React.createClass({
             result.push({'display': this.state.selectedTags[i].display, 'value':value_or_new});
         }
         return result;
+    },
+    setValues: function(tags) {
+        this.setState({tagInput: '', currentTagInput: '', selectedTags: tags});
     },
     listTags: function() {
         var toReturn = [];
