@@ -27,7 +27,10 @@ var AddFolderForm = React.createClass({
             return;
         }
         this.refs.new_folder_name.getDOMNode().value = '';
-        this.post("/folder/add", {'new-folder-name' : new_folder_name }, function() { });
+        this.post("/folder/add", {'new-folder-name' : new_folder_name }, this.reload);
+    },
+    reload: function() {
+        location.reload();
     }
 });
 
@@ -40,7 +43,7 @@ var FolderForm = React.createClass({
         e.preventDefault();
         this.post('/folder/pick', 
                   {'existing-folder': this.refs.folderpick.getValue()},
-                  this.reload());
+                  this.reload);
     },
     reload: function() {
         location.reload();
