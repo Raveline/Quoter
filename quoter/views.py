@@ -27,7 +27,7 @@ def quoterLogin(request):
             if user is not None:
                 login(request, user)
                 folder_check(request)
-                return userHome(request)
+                return redirect('/');
     return errorHome(request)
 
 
