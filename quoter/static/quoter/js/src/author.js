@@ -36,45 +36,45 @@ var AuthorForm = React.createClass({
         if (this.state.inEditMode) {
             this.sendUpdate(newAuthor, adder);
         } else {
-            this.post('author/new', adder);
+            this.post('author/new', newAuthor, adder);
         }
     },
     render: function() { 
         return (
-        <div id="author-add" className="tab-pane fade in">
-            <div className="panel panel-default">
+                <div id="author-add" className="tab-pane fade in">
+                <div className="panel panel-default">
                 <div className="panel-heading">
-                    <h3 className="panel-title">Add an author</h3>
+                <h3 className="panel-title">Add an author</h3>
                 </div>
                 <div className="panel-body">
-                    <form role="form" onSubmit={this.handleSubmit}>
-                        <DjangoCSRF/>
-                        <div className="form-group">
-                            <label htmlFor="author_first_name">First name</label>
-                            <input type="text" ref="author_first_name" className="form-control"/>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="author_last_name">Last name</label>
-                            <input type="text" ref="author_last_name" className="form-control"/>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="author_surname">Surname</label>
-                            <input type="text" ref="author_surname" className="form-control"/>
-                        </div>
-                        <button type="submit" className="btn btn-default">{this.saveOrModify()}</button>
-                    </form>
+                <form role="form" onSubmit={this.handleSubmit}>
+                <DjangoCSRF/>
+                <div className="form-group">
+                <label htmlFor="author_first_name">First name</label>
+                <input type="text" ref="author_first_name" className="form-control"/>
                 </div>
-            </div>
-            <div className="panel panel-default">
+                <div className="form-group">
+                <label htmlFor="author_last_name">Last name</label>
+                <input type="text" ref="author_last_name" className="form-control"/>
+                </div>
+                <div className="form-group">
+                <label htmlFor="author_surname">Surname</label>
+                <input type="text" ref="author_surname" className="form-control"/>
+                </div>
+                <button type="submit" className="btn btn-default">{this.saveOrModify()}</button>
+                </form>
+                </div>
+                </div>
+                <div className="panel panel-default">
                 <div className="panel-heading">
-                    <h3 className="panel-title">... or pick an author to modify</h3>
+                <h3 className="panel-title">... or pick an author to modify</h3>
                 </div>
                 <div className="panel-body">
-                    {this.renderEdit()}
-                </div>
-            </div>
+                {this.renderEdit()}
         </div>
-    );
+            </div>
+            </div>
+            );
     }
 });
 
