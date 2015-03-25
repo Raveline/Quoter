@@ -27,7 +27,7 @@ def quoterLogin(request):
             if user is not None:
                 login(request, user)
                 folder_check(request)
-                return redirect('/');
+                return redirect('/')
     return errorHome(request)
 
 
@@ -263,7 +263,7 @@ def addFolder(request):
     folder = Folder(name=folder_name, user=user)
     folder.save()
     set_folder_to(request, folder.pk)
-    return redirect('home')
+    return json_success('Added folder.')
 
 
 @login_required
@@ -273,7 +273,7 @@ def pickFolder(request):
     folder = Folder.objects.get(pk=folder_id)
     if folder.user == user:
         set_folder_to(request, folder_id)
-    return redirect('home')
+    return json_success('Changed folder.')
 
 
 @login_required
