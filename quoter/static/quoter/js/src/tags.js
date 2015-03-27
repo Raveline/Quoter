@@ -20,7 +20,7 @@ var SingleTag = React.createClass({
         return (
             <span className={label_class}>
                 {this.props.name}
-                <a href="#" className="tag-remover" onClick={this.remove}>X</a>
+                <a href="#" onClick={this.remove}>X</a>
             </span>
         )
     }
@@ -43,7 +43,7 @@ var TagSelector = React.createClass({
         this.setState({selectedTags : newTags});
     },
     removeTag: function(tag_display) {
-        var tags = utils.removeFromIfExist(this.state.selectedTags, function(x) { x.display == tag_display });
+        var tags = utils.removeFromIfExist(this.state.selectedTags, function(x) { return x.display == tag_display });
         this.setState({selectedTags : tags});
     },
     onKeyDown: function(e) {
