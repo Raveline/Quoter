@@ -154,19 +154,24 @@ var Autocompleter = React.createClass({
             return this.state.selectable[this.state.selectedIdx];
         }
     },
+    haveSelectable: function() {
+        return this.state.selectable.length > 0;
+    },
     down: function() {
         var selectedIdx = this.state.selectedIdx;
-        if (this.state.selectable.length) {
+        // A list of selectable exist : navigate inside
+        if (this.haveSelectable()) {
             selectedIdx++;
             this.correctSelected(selectedIdx);
         }
+        // No selectable : display all tags.
         else {
-            this.setState({selectedIdx: -1});
+            this.setState({selectable: this.props.choice, selectedIdx: 0});
         }
     },
     up: function() {
         var selectedIdx = this.state.selectedIdx;
-        if (this.state.selectable.length) {
+        if (this.haveSelectable()) {
             selectedIdx--;
             this.correctSelected(selectedIdx);
         } else {
@@ -174,7 +179,6 @@ var Autocompleter = React.createClass({
         }
     },
     correctSelected: function(selectedIdx) {
-        var selectedIdx = undefined;
         if (selectedIdx < 0) {
             var selectedIdx = this.state.selectable.length -1;
         } else if (selectedIdx > this.state.selectable.length - 1) {
