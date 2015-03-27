@@ -9,13 +9,24 @@ var SearchResult = React.createClass({
         content: React.PropTypes.string.isRequired,
         source: React.PropTypes.string.isRequired,
         page: React.PropTypes.string.isRequired,
+        tags: React.PropTypes.array.isRequired,
         editFunc: React.PropTypes.func.isRequired
     },
     editQuote: function() {
         this.props.editFunc(this.props.quote_id)
     },
+    tagDisplay: function() {
+        var tags = [];
+        for (var i = 0; i < this.props.tags.length; i++) {
+            tags.push(<span className="label label-default">{this.props.tags[i]}</span>)
+        }
+        return tags;
+    },
     render: function() { return (
         <div className="panel panel-default">
+            <div className="panel-header">
+                {this.tagDisplay()}
+            </div>
             <div className="panel-body">
                 {this.props.content}
             </div>
@@ -43,7 +54,7 @@ var FindForm = React.createClass({
             results.push(
                 <SearchResult quote_id = {data[i].value} content = {data[i].content}
                               source = {data[i].source} page = {data[i].page}
-                              editFunc = {this.props.quoteEdit}/>
+                              tags = {data[i].tags} editFunc = {this.props.quoteEdit}/>
             );
         }
         if (data.length == 0) {

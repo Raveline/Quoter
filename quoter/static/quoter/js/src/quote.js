@@ -50,7 +50,7 @@ var QuoteForm = React.createClass({
         if (this.state.inEditMode) {
             this.sendUpdate(quote_obj, adder);
         } else {
-            this.post('quote/new', quote_obj);
+            this.post('quote/new', quote_obj, adder);
         }
         this.empty();
     },
