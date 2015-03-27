@@ -14,7 +14,7 @@ var SingleTag = React.createClass({
     },
     render: function() { 
         var label_class = "label label-default";
-        if (!this.tag_id) {
+        if (this.props.isNew) {
             label_class= "label label-warning";
         }
         return (
@@ -101,7 +101,7 @@ var TagSelector = React.createClass({
                 );
             } else {
                 toReturn.push(
-                    <SingleTag removeFunc={this.removeTag} name={this.state.selectedTags[i].display} isNew={false}/>
+                    <SingleTag removeFunc={this.removeTag} name={this.state.selectedTags[i].display} isNew={true}/>
                 );
             }
         }
