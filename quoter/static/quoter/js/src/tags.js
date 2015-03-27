@@ -142,7 +142,7 @@ var Autocompleter = React.createClass({
             var allDisplay = this.props.choice.filter(function(x) { return regexp.test(x.display.toLowerCase()); });
             var selectedIdx = -1;
             if (allDisplay.length > 0) {
-                selectedIdx = 1;
+                selectedIdx = 0;
             }
             this.setState({selectable : allDisplay, selectedIdx:selectedIdx});
         } else {
