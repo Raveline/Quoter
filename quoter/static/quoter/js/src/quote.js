@@ -95,6 +95,7 @@ var QuoteForm = React.createClass({
                         <div className="form-group">
                             <label htmlFor="content">Quote</label>
                             <textarea ref="quote" className="form-control" rows="6" name="content"></textarea>
+                            <small>Surround text with a single * for italic and double ** for bold.</small>
                         </div>
                         <div className="form-group">
                             <label htmlFor="page">Page / Localisation</label>
