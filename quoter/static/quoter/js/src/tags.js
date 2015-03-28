@@ -39,6 +39,15 @@ var TagSelector = React.createClass({
         this.setState(this.getInitialState());
     },
     appendTag: function(display, value) {
+        if (!value) {
+            var potential_duplicate = this.props.tags.filter(function(x) { return x.display == display });
+            if (potential_duplicate.length > 0) {
+            // This tag has no pk yet there is already an exact similar display for it...
+            // Let's prevent a duplicate or a unique constraint failure and replace value 
+            // by the existing tag one
+                value = potential_duplicate[0].value
+            }
+        }
         var newTags = this.state.selectedTags.concat({display:display, value:value});
         this.setState({selectedTags : newTags});
     },
