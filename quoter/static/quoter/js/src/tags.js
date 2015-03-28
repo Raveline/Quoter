@@ -53,6 +53,9 @@ var TagSelector = React.createClass({
         if (e.key == 'ArrowUp') {
             this.refs.autocompleter.up();
         }
+        if (e.key == 'Escape') {
+            this.refs.autocompleter.unselect();
+        }
         var selected = this.refs.autocompleter.getSelected()
         var autocomplete_has_selected = selected || false
         if (e.key === 'Enter' || (e.key === 'Tab' && autocomplete_has_selected)) {
@@ -156,6 +159,9 @@ var Autocompleter = React.createClass({
     },
     haveSelectable: function() {
         return this.state.selectable.length > 0;
+    },
+    unselect: function() {
+        this.setState({selectedIdx:-1});
     },
     down: function() {
         var selectedIdx = this.state.selectedIdx;
