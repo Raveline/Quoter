@@ -41,8 +41,8 @@ var QuoteForm = React.createClass({
                          'page' : page,
                          'tags' : JSON.stringify(tags),
                          'comment' : comment }
-        var adder = function() {
-            var new_tags = tags.filter(function(x) { return x.key == 'new' });
+        var adder = function(info) {
+            var new_tags = info.newObject
             for (var i = 0; i < new_tags.length; i++) {
                 this.props.addTag(new_tags[i]);
             }
