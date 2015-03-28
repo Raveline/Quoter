@@ -2,6 +2,7 @@
 var React = require('react');
 var common = require('./common.js');
 var DjangoCSRF = require('./csrf.js');
+var marked = require('marked');
 
 var SearchResult = React.createClass({
     propTypes: {
@@ -22,19 +23,19 @@ var SearchResult = React.createClass({
         }
         return tags;
     },
-    render: function() { return (
-        <div className="panel panel-default">
-            <div className="panel-header">
-                {this.tagDisplay()}
+    render: function() { 
+        var rawMarkup = marked(this.props.content);
+        return (
+            <div className="panel panel-default">
+                <div className="panel-header">
+                    {this.tagDisplay()}
+                </div>
+                <div className="panel-body" dangerouslySetInnerHTML={{__html: rawMarkup}}/>
+                <div className="panel-footer">
+                    {this.props.source} - {this.props.page}
+                    <button onClick={this.editQuote} className="btn btn-default">Edit</button>
+                </div>
             </div>
-            <div className="panel-body">
-                {this.props.content}
-            </div>
-            <div className="panel-footer">
-                {this.props.source} - {this.props.page}
-                <button onClick={this.editQuote} className="btn btn-default">Edit</button>
-            </div>
-        </div>
         );
     }
 });
