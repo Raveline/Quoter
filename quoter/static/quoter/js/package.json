@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "react": "~0.12.1",
-    "jquery": "v2.1.1"
+    "jquery": "v2.1.1",
+    "marked": "0.3.3"
   },
   "main": "build/quoter_app.js",
   "test": "echo \"Error: no test specified\" && exit 1",
