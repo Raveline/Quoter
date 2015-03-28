@@ -107,7 +107,7 @@ def addQuote(request):
                            'page', 'tags', 'comment'], request.POST):
             source = request.POST['source']
             authors = read_authors(request.POST['authors'])
-            tags = read_tags(request, request.POST['tags'])
+            tags, new_tags = read_tags(request, request.POST['tags'])
             content = request.POST['content']
             page = request.POST['page']
             comment = request.POST['comment']
@@ -120,7 +120,7 @@ def addQuote(request):
             quote.save()
             quote.authority = authors
             quote.tags = tags
-            return json_success("Added : " + str(source))
+            return json_creation_success(new_tags)
         else:
             return json_error('Missing fields.')
     else:
@@ -304,8 +304,12 @@ def mustHaveFields(fields, parameters):
 def read_tags(request, tags_string):
     """Receive a series of tags, that can be stored as integer or string.
     If it's an integer : we already stored this tag. If it's a string, it's
-    a new one and we have to record it."""
+    a new one and we have to record it.
+    This function returns a pair : first item contains all the tags read
+    the second contains all the new tags created.
+    """
     tags = []
+    new_tags = []
     preparsed = tags_string.replace("'", "\"")
     parsed = json.loads(preparsed)
     identified = [p for p in parsed if p['value'] != 'new']
@@ -316,11 +320,12 @@ def read_tags(request, tags_string):
         tag = Tag(name=t['display'], folder_id=folder_id)
         tag.save()
         tags.append(tag)
+        new_tags.append(tag)
     for t in identified:
         if isinstance(t['value'], int) or t['value'].isdigit():
             tags.append(Tag.objects.get(pk=int(t['value'])))
 
-    return tags
+    return tags, new_tags
 
 
 def read_authors(authors_string):
@@ -449,7 +454,11 @@ def json_creation_success(obj):
     a string out of it, and we can have give its primary key.'''
     response = {}
     response['result'] = 'success'
-    response['newObject'] = {'display': str(obj), 'value': obj.pk}
+    try:
+        response['newObject'] = [{'display': str(o), 'value': o.pk}
+                                 for o in obj]
+    except TypeError:
+        response['newObject'] = {'display': str(obj), 'value': obj.pk}
     return json_response(response)
 
 
