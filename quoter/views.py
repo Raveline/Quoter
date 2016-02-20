@@ -191,7 +191,8 @@ def getAuthorsOf(request, source_id):
 
 @login_required
 def getSources(request):
-    sources = Source.objects.filter(folder_id=get_current_folder_id(request))
+    sources = Source.objects.filter(folder_id=get_current_folder_id(request)).\
+        order_by('title')
     response = {'result': 'sucess',
                 'data': jsonify_object_array(sources)}
     return json_response(response)
