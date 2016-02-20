@@ -174,7 +174,8 @@ def updateQuote(request, quote_id):
 
 @login_required
 def getAuthors(request):
-    authors = Author.objects.filter(folder_id=get_current_folder_id(request))
+    authors = Author.objects.filter(folder_id=get_current_folder_id(request)).\
+        order_by('last_name')
     response = {'result': 'success',
                 'data': jsonify_object_array(authors)}
     return json_response(response)
